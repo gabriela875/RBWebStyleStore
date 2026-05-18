@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="jakarta.faces.html"
+	xmlns:ui="jakarta.faces.facelets" xmlns:f="jakarta.faces.core">
+
+<ui:composition template="/WEB-INF/templates/plantilla.xhtml">
+	<ui:define name="contenido">
+
+		<h:outputStylesheet library="css" name="vistas.css" />
+
+		<h1 class="pagina-titulo">Ventas</h1>
+		<p class="pagina-subtitulo">Historial y gestión de ventas</p>
+
+		<h:panelGroup rendered="#{not empty ventaBean.mensajeExito}">
+			<div class="mensaje-exito">#{ventaBean.mensajeExito}</div>
+		</h:panelGroup>
+		<h:panelGroup rendered="#{not empty ventaBean.mensajeError}">
+			<div class="mensaje-error">#{ventaBean.mensajeError}</div>
+		</h:panelGroup>
+
+		<!-- Tabla todas las ventas -->
+		<div class="card">
+			<div class="card-titulo">Todas las ventas</div>
+			<div class="tabla-contenedor">
+				<table class="tabla">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Fecha y hora</th>
+							<th>Cliente</th>
+							<th>Empleado</th>
+							<th>Total</th>
+							<th>Estado</th>
+							<th>Acciones</th>
+						</tr>
+					</thead>
+					<tbody>
+						<ui:repeat value="#{ventaBean.listarTodas()}" var="v">
+							<tr>
+								<td>#{v.idVenta}</td>
+								<td>#{v.fechaHora}</td>
+								<td>#{v.cliente.nombre} #{v.cliente.apellido}</td>
+								<td>#{v.empleado.nombre} #{v.empleado.apellido}</td>
+								<td>$#{v.total}</td>
+								<td><h:panelGroup
+										rendered="#{v.estado.name() == 'pendiente'}">
+										<span class="badge badge-pendiente">Pendiente</span>
+									</h:panelGroup> <h:panelGroup rendered="#{v.estado.name() == 'completada'}">
+										<span class="badge badge-completada">Completada</span>
+									</h:panelGroup> <h:panelGroup rendered="#{v.estado.name() == 'anulada'}">
+										<span class="badge badge-anulada">Anulada</span>
+									</h:panelGroup></td>
+								<td><h:panelGroup
+										rendered="#{v.estado.name() == 'pendiente'}">
+										<h:form>
+											<h:inputText id="motivoAnulacion"
+												value="#{ventaBean.motivoAnulacion}" styleClass="form-input"
+												style="width:130px" required="true"
+												requiredMessage="El motivo es obligatorio"
+												placeholder="Motivo">
+												<f:validateLength minimum="5" maximum="200" />
+											</h:inputText>
+											<h:message for="motivoAnulacion" styleClass="mensaje-error" />
+											<h:commandButton value="Anular"
+												action="#{ventaBean.anularVentaAdmin(v.idVenta)}"
+												styleClass="btn-tabla-peligro" />
+										</h:form>
+									</h:panelGroup></td>
+							</tr>
+						</ui:repeat>
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<!-- Anulaciones -->
+		<div class="card">
+			<div class="card-titulo">Registro de anulaciones</div>
+			<div class="tabla-contenedor">
+				<table class="tabla">
+					<thead>
+						<tr>
+							<th>ID Venta</th>
+							<th>Motivo</th>
+							<th>Fecha y hora</th>
+							<th>Anulado por</th>
+						</tr>
+					</thead>
+					<tbody>
+						<ui:repeat value="#{ventaBean.listarAnulaciones()}" var="an">
+							<tr>
+								<td>#{an.venta.idVenta}</td>
+								<td>#{an.motivo}</td>
+								<td>#{an.fechaHora}</td>
+								<td>#{an.empleado.nombre} #{an.empleado.apellido}</td>
+							</tr>
+						</ui:repeat>
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+	</ui:define>
+</ui:composition>
+</html>

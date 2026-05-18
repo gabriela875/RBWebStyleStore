@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="jakarta.faces.html"
+	xmlns:ui="jakarta.faces.facelets" xmlns:f="jakarta.faces.core">
+
+<ui:composition template="/WEB-INF/templates/plantilla.xhtml">
+	<ui:define name="contenido">
+
+		<h:outputStylesheet library="css" name="vistas.css" />
+
+		<h1 class="pagina-titulo">Productos</h1>
+		<p class="pagina-subtitulo">Catálogo y descuentos</p>
+
+		<!-- Mensajes globales -->
+		<h:panelGroup rendered="#{not empty productoBean.mensajeExito}">
+			<div class="mensaje-exito">#{productoBean.mensajeExito}</div>
+		</h:panelGroup>
+		<h:panelGroup rendered="#{not empty productoBean.mensajeError}">
+			<div class="mensaje-error">#{productoBean.mensajeError}</div>
+		</h:panelGroup>
+
+		<!-- Formulario nuevo producto -->
+		<div class="card">
+			<div class="card-titulo">Nuevo producto</div>
+			<h:form>
+				<div class="form-grid">
+
+					<div class="form-campo">
+						<label class="form-label">Código único</label>
+						<h:inputText id="codigo" value="#{productoBean.producto.codigo}"
+							styleClass="form-input" required="true"
+							requiredMessage="El código es obligatorio">
+							<f:validateLength minimum="1" maximum="50" />
+						</h:inputText>
+						<h:message for="codigo" styleClass="mensaje-error" />
+					</div>
+
+					<div class="form-campo">
+						<label class="form-label">Nombre</label>
+						<h:inputText id="nombreProducto"
+							value="#{productoBean.producto.nombre}" styleClass="form-input"
+							required="true" requiredMessage="El nombre es obligatorio">
+							<f:validateLength minimum="2" maximum="100" />
+						</h:inputText>
+						<h:message for="nombreProducto" styleClass="mensaje-error" />
+					</div>
+
+					<div class="form-campo">
+						<label class="form-label">Marca</label>
+						<h:inputText id="marca" value="#{productoBean.producto.marca}"
+							styleClass="form-input" required="true"
+							requiredMessage="La marca es obligatoria">
+							<f:validateLength minimum="2" maximum="50" />
+						</h:inputText>
+						<h:message for="marca" styleClass="mensaje-error" />
+					</div>
+
+					<div class="form-campo">
+						<label class="form-label">Precio base (COP)</label>
+						<h:inputText id="precioBase"
+							value="#{productoBean.producto.precioBase}"
+							styleClass="form-input" required="true"
+							requiredMessage="El precio es obligatorio">
+							<f:validateDoubleRange minimum="0.01"
+								message="El precio debe ser mayor a cero" />
+						</h:inputText>
+						<h:message for="precioBase" styleClass="mensaje-error" />
+					</div>
+
+					<div class="form-campo">
+						<label class="form-label">Categoría</label>
+						<h:selectOneMenu id="categoria"
+							value="#{productoBean.idCategoriaSeleccionada}"
+							styleClass="form-select" required="true"
+							requiredMessage="La categoría es obligatoria">
+							<f:selectItem itemLabel="Seleccionar..." itemValue="0" />
+							<f:selectItems value="#{productoBean.listaCategorias}" var="cat"
+								itemLabel="#{cat.nombre}" itemValue="#{cat.idCategoria}" />
+						</h:selectOneMenu>
+						<h:message for="categoria" styleClass="mensaje-error" />
+					</div>
+
+					<div class="form-campo">
+						<label class="form-label">Proveedor</label>
+						<h:selectOneMenu id="proveedor"
+							value="#{productoBean.idProveedorSeleccionado}"
+							styleClass="form-select" required="true"
+							requiredMessage="El proveedor es obligatorio">
+							<f:selectItem itemLabel="Seleccionar..." itemValue="0" />
+							<f:selectItems value="#{productoBean.listaProveedores}"
+								var="prov" itemLabel="#{prov.nombre}"
+								itemValue="#{prov.idProveedor}" />
+						</h:selectOneMenu>
+						<h:message for="proveedor" styleClass="mensaje-error" />
+					</div>
+
+					<div class="form-campo">
+						<label class="form-label">Género</label>
+						<h:selectOneMenu id="genero"
+							value="#{productoBean.producto.genero}" styleClass="form-select"
+							required="true" requiredMessage="El género es obligatorio">
+							<f:selectItem itemLabel="Seleccionar..." itemValue="#{null}" />
+							<f:selectItems value="#{productoBean.generos}" var="g"
+								itemLabel="#{g}" itemValue="#{g}" />
+						</h:selectOneMenu>
+						<h:message for="genero" styleClass="mensaje-error" />
+					</div>
+
+				</div>
+
+				<div class="btn-grupo">
+					<h:commandButton value="Registrar"
+						action="#{productoBean.registrar}" styleClass="btn-primario" />
+					<h:commandButton value="Limpiar" action="#{productoBean.nuevo}"
+						styleClass="btn-secundario" immediate="true" />
+				</div>
+			</h:form>
+		</div>
+
+		<!-- Tabla productos -->
+		<div class="card">
+			<div class="card-titulo">Catálogo de productos</div>
+			<div class="tabla-contenedor">
+				<table class="tabla">
+					<thead>
+						<tr>
+							<th>Código</th>
+							<th>Nombre</th>
+							<th>Categoría</th>
+							<th>Precio base</th>
+							<th>Género</th>
+							<th>Estado</th>
+							<th>Acciones</th>
+						</tr>
+					</thead>
+					<tbody>
+						<ui:repeat value="#{productoBean.listaProductos}" var="prod">
+							<tr>
+								<td>#{prod.codigo}</td>
+								<td>#{prod.nombre}</td>
+								<td>#{prod.categoria.nombre}</td>
+								<td>$#{prod.precioBase}</td>
+								<td>#{prod.genero}</td>
+								<td><h:panelGroup
+										rendered="#{prod.estado.name() == 'disponible'}">
+										<span class="badge badge-disponible">Disponible</span>
+									</h:panelGroup> <h:panelGroup rendered="#{prod.estado.name() == 'agotado'}">
+										<span class="badge badge-agotado">Agotado</span>
+									</h:panelGroup> <h:panelGroup
+										rendered="#{prod.estado.name() == 'descontinuado'}">
+										<span class="badge badge-descontinuado">Descontinuado</span>
+									</h:panelGroup></td>
+								<td>
+									<div class="acciones">
+										<h:form>
+											<h:commandButton value="Descontinuar"
+												rendered="#{prod.estado.name() != 'descontinuado'}"
+												action="#{productoBean.descontinuar(prod.idProducto)}"
+												styleClass="btn-tabla-peligro" />
+										</h:form>
+										<h:form>
+											<h:inputText id="nuevoPrecio"
+												value="#{productoBean.nuevoPrecio}" styleClass="form-input"
+												style="width:100px" placeholder="Nuevo precio">
+												<f:validateDoubleRange minimum="0.01"
+													message="El precio debe ser mayor a cero" />
+											</h:inputText>
+											<h:message for="nuevoPrecio" styleClass="mensaje-error" />
+											<h:commandButton value="Actualizar precio"
+												action="#{productoBean.actualizarPrecio(prod.idProducto)}"
+												styleClass="btn-tabla" />
+										</h:form>
+									</div>
+								</td>
+							</tr>
+						</ui:repeat>
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<!-- Descuentos -->
+		<div class="card">
+			<div class="card-titulo">Registrar descuento</div>
+			<h:form>
+				<div class="form-grid">
+
+					<div class="form-campo">
+						<label class="form-label">Producto</label>
+						<h:selectOneMenu id="productoDescuento"
+							value="#{productoBean.idProductoDescuento}"
+							styleClass="form-select" required="true"
+							requiredMessage="Debe seleccionar un producto">
+							<f:selectItem itemLabel="Seleccionar..." itemValue="0" />
+							<f:selectItems value="#{productoBean.listaProductos}" var="prod"
+								itemLabel="#{prod.nombre}" itemValue="#{prod.idProducto}" />
+						</h:selectOneMenu>
+						<h:message for="productoDescuento" styleClass="mensaje-error" />
+					</div>
+
+					<div class="form-campo">
+						<label class="form-label">Tipo de descuento</label>
+						<h:selectOneMenu id="tipoDescuento"
+							value="#{productoBean.descuento.tipo}" styleClass="form-select"
+							required="true"
+							requiredMessage="Debe seleccionar el tipo de descuento">
+							<f:selectItem itemLabel="Seleccionar..." itemValue="#{null}" />
+							<f:selectItems value="#{productoBean.tiposDescuento}" var="td"
+								itemLabel="#{td}" itemValue="#{td}" />
+						</h:selectOneMenu>
+						<h:message for="tipoDescuento" styleClass="mensaje-error" />
+					</div>
+
+					<div class="form-campo">
+						<label class="form-label">Valor</label>
+						<h:inputText id="valorDescuento"
+							value="#{productoBean.descuento.valor}" styleClass="form-input"
+							required="true" requiredMessage="El valor es obligatorio"
+							placeholder="Monto o porcentaje">
+							<f:validateDoubleRange minimum="0.01"
+								message="El valor del descuento debe ser mayor a cero" />
+						</h:inputText>
+						<h:message for="valorDescuento" styleClass="mensaje-error" />
+					</div>
+
+					<div class="form-campo">
+						<label class="form-label">Fecha inicio</label>
+						<h:inputText id="fechaInicio"
+							value="#{productoBean.descuento.fechaInicio}"
+							styleClass="form-input" required="true"
+							requiredMessage="La fecha de inicio es obligatoria"
+							placeholder="AAAA-MM-DD">
+							<f:convertDateTime pattern="yyyy-MM-dd" />
+						</h:inputText>
+						<h:message for="fechaInicio" styleClass="mensaje-error" />
+					</div>
+
+					<div class="form-campo">
+						<label class="form-label">Fecha fin</label>
+						<h:inputText id="fechaFin"
+							value="#{productoBean.descuento.fechaFin}"
+							styleClass="form-input" required="true"
+							requiredMessage="La fecha de fin es obligatoria"
+							placeholder="AAAA-MM-DD">
+							<f:convertDateTime pattern="yyyy-MM-dd" />
+						</h:inputText>
+						<h:message for="fechaFin" styleClass="mensaje-error" />
+					</div>
+
+				</div>
+
+				<div class="btn-grupo">
+					<h:commandButton value="Registrar descuento"
+						action="#{productoBean.registrarDescuento(productoBean.idProductoDescuento)}"
+						styleClass="btn-primario" />
+				</div>
+			</h:form>
+		</div>
+
+	</ui:define>
+</ui:composition>
+</html>

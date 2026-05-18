@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="jakarta.faces.html"
+	xmlns:ui="jakarta.faces.facelets" xmlns:f="jakarta.faces.core">
+
+<ui:composition template="/WEB-INF/templates/plantilla.xhtml">
+	<ui:define name="contenido">
+
+		<h:outputStylesheet library="css" name="vistas.css" />
+
+		<h1 class="pagina-titulo">Entrada de mercancía</h1>
+		<p class="pagina-subtitulo">Registro de ingreso de productos al
+			inventario</p>
+
+		<h:panelGroup rendered="#{not empty abastecimientoBean.mensajeExito}">
+			<div class="mensaje-exito">#{abastecimientoBean.mensajeExito}</div>
+		</h:panelGroup>
+		<h:panelGroup rendered="#{not empty abastecimientoBean.mensajeError}">
+			<div class="mensaje-error">#{abastecimientoBean.mensajeError}</div>
+		</h:panelGroup>
+
+		<div class="panel-grid">
+
+			<!-- Formulario -->
+			<div>
+				<div class="card">
+					<div class="card-titulo">Datos de la entrada</div>
+					<h:form>
+
+						<div class="form-campo">
+							<label class="form-label">Proveedor</label>
+							<h:selectOneMenu id="proveedor"
+								value="#{abastecimientoBean.idProveedorSeleccionado}"
+								styleClass="form-select" required="true"
+								requiredMessage="El proveedor es obligatorio">
+								<f:selectItem itemLabel="Seleccionar..." itemValue="0" />
+								<f:selectItems value="#{abastecimientoBean.listaProveedores}"
+									var="prov" itemLabel="#{prov.nombre}"
+									itemValue="#{prov.idProveedor}" />
+							</h:selectOneMenu>
+							<h:message for="proveedor" styleClass="mensaje-error" />
+						</div>
+
+						<hr class="separador" />
+						<div class="card-titulo" style="margin-bottom: 16px">Agregar
+							producto</div>
+
+						<div class="form-grid">
+
+							<div class="form-campo form-grid-full">
+								<label class="form-label">ID Inventario (combinación)</label>
+								<h:inputText id="idInventarioDetalle"
+									value="#{abastecimientoBean.idInventarioDetalle}"
+									styleClass="form-input" required="true"
+									requiredMessage="El ID de inventario es obligatorio"
+									placeholder="ID de la combinación">
+									<f:validateLongRange minimum="1"
+										message="Debe ingresar un ID válido" />
+								</h:inputText>
+								<h:message for="idInventarioDetalle" styleClass="mensaje-error" />
+							</div>
+
+							<div class="form-campo">
+								<label class="form-label">Cantidad</label>
+								<h:inputText id="cantidadDetalle"
+									value="#{abastecimientoBean.detalleActual.cantidad}"
+									styleClass="form-input" required="true"
+									requiredMessage="La cantidad es obligatoria"
+									placeholder="Unidades">
+									<f:validateLongRange minimum="1"
+										message="La cantidad debe ser mayor a cero" />
+								</h:inputText>
+								<h:message for="cantidadDetalle" styleClass="mensaje-error" />
+							</div>
+
+							<div class="form-campo">
+								<label class="form-label">Precio unitario (COP)</label>
+								<h:inputText id="precioDetalle"
+									value="#{abastecimientoBean.detalleActual.precioUnitario}"
+									styleClass="form-input" required="true"
+									requiredMessage="El precio unitario es obligatorio"
+									placeholder="Precio">
+									<f:validateDoubleRange minimum="0.01"
+										message="El precio debe ser mayor a cero" />
+								</h:inputText>
+								<h:message for="precioDetalle" styleClass="mensaje-error" />
+							</div>
+
+						</div>
+
+						<div class="btn-grupo">
+							<h:commandButton value="Agregar producto"
+								action="#{abastecimientoBean.agregarDetalle}"
+								styleClass="btn-secundario" />
+						</div>
+
+						<hr class="separador" />
+
+						<div class="btn-grupo">
+							<h:commandButton value="Registrar entrada completa"
+								action="#{abastecimientoBean.registrarEntrada}"
+								styleClass="btn-primario" />
+						</div>
+
+					</h:form>
+				</div>
+			</div>
+
+			<!-- Productos acumulados -->
+			<div class="card">
+				<div class="card-titulo">Productos en esta entrada</div>
+				<h:panelGroup rendered="#{empty abastecimientoBean.detalles}">
+					<p style="font-size: 13px; color: #9C7B6B">Aún no hay productos
+						agregados.</p>
+				</h:panelGroup>
+				<h:panelGroup rendered="#{not empty abastecimientoBean.detalles}">
+					<div class="tabla-contenedor">
+						<table class="tabla">
+							<thead>
+								<tr>
+									<th>Producto</th>
+									<th>Talla</th>
+									<th>Color</th>
+									<th>Cantidad</th>
+									<th>Precio unit.</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								<ui:repeat value="#{abastecimientoBean.detalles}" var="det"
+									varStatus="st">
+									<tr>
+										<td>#{det.inventario.producto.nombre}</td>
+										<td>#{det.inventario.talla.nombre}</td>
+										<td>#{det.inventario.color.nombre}</td>
+										<td>#{det.cantidad}</td>
+										<td>$#{det.precioUnitario}</td>
+										<td><h:form>
+												<h:commandButton value="Quitar"
+													action="#{abastecimientoBean.quitarDetalle(st.index)}"
+													styleClass="btn-tabla-peligro" />
+											</h:form></td>
+									</tr>
+								</ui:repeat>
+							</tbody>
+						</table>
+					</div>
+				</h:panelGroup>
+			</div>
+
+		</div>
+
+	</ui:define>
+</ui:composition>
+</html>

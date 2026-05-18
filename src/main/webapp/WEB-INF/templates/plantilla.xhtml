@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="jakarta.faces.html"
+	xmlns:ui="jakarta.faces.facelets" xmlns:f="jakarta.faces.core">
+
+<h:head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>StyleStore</title>
+	<h:outputStylesheet library="css" name="estilos.css" />
+</h:head>
+
+<h:body>
+	<div class="layout">
+
+		<!-- Header -->
+		<header class="header">
+			<div class="header-logo">
+				Style<span>Store</span>
+			</div>
+			<div class="header-info">
+				<div>
+					<div class="header-empleado">
+						#{sessionBean.empleadoActivo.nombre}
+						#{sessionBean.empleadoActivo.apellido}</div>
+					<div class="header-cargo">
+						#{sessionBean.empleadoActivo.cargo.tipo}</div>
+				</div>
+				<h:form>
+					<h:commandButton value="Cerrar sesión" action="#{loginBean.logout}"
+						styleClass="btn-logout" />
+				</h:form>
+			</div>
+		</header>
+
+		<!-- Sidebar -->
+		<nav class="sidebar">
+
+			<!-- Menu Admin -->
+			<ui:fragment rendered="#{sessionBean.isAdmin()}">
+				<span class="sidebar-seccion">Gestión</span>
+				<h:link value="Empleados" outcome="/admin/empleados"
+					styleClass="sidebar-item" />
+				<h:link value="Proveedores" outcome="/admin/proveedores"
+					styleClass="sidebar-item" />
+				<h:link value="Productos" outcome="/admin/productos"
+					styleClass="sidebar-item" />
+				<h:link value="Inventario" outcome="/admin/inventario"
+					styleClass="sidebar-item" />
+				<span class="sidebar-seccion">Operaciones</span>
+				<h:link value="Ventas" outcome="/admin/ventas"
+					styleClass="sidebar-item" />
+				<span class="sidebar-seccion">Reportes</span>
+				<h:link value="Consultas" outcome="/admin/consultas"
+					styleClass="sidebar-item" />
+			</ui:fragment>
+
+			<!-- Menu Vendedor -->
+			<ui:fragment rendered="#{sessionBean.isVendedor()}">
+				<span class="sidebar-seccion">Operaciones</span>
+				<h:link value="Nueva Venta" outcome="/vendedor/ventas"
+					styleClass="sidebar-item" />
+				<span class="sidebar-seccion">Reportes</span>
+				<h:link value="Consultas" outcome="/vendedor/consultas"
+					styleClass="sidebar-item" />
+			</ui:fragment>
+
+			<!-- Menu Bodeguero -->
+			<ui:fragment rendered="#{sessionBean.isBodeguero()}">
+				<span class="sidebar-seccion">Abastecimiento</span>
+				<h:link value="Entrada Mercancía" outcome="/bodeguero/mercancia"
+					styleClass="sidebar-item" />
+				<h:link value="Inventario" outcome="/bodeguero/inventario"
+					styleClass="sidebar-item" />
+				<span class="sidebar-seccion">Reportes</span>
+				<h:link value="Consultas" outcome="/bodeguero/consultas"
+					styleClass="sidebar-item" />
+			</ui:fragment>
+
+		</nav>
+
+		<!-- Contenido -->
+		<main class="contenido">
+			<ui:insert name="contenido" />
+		</main>
+
+	</div>
+</h:body>
+</html>

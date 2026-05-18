@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	 xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core">
+
+<h:head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>StyleStore — Acceso</title>
+	<h:outputStylesheet library="css" name="login.css"/>
+</h:head>
+
+<h:body>
+	<div class="login-panel-izquierdo">
+		<div class="login-marca">
+			<div class="login-marca-nombre">
+				Style<span>Store</span>
+			</div>
+			<div class="login-marca-linea"></div>
+			<div class="login-marca-slogan">Sistema de gestión</div>
+		</div>
+		<div class="login-decoracion">
+			<div class="login-decoracion-circulo activo"></div>
+			<div class="login-decoracion-circulo"></div>
+			<div class="login-decoracion-circulo"></div>
+		</div>
+	</div>
+
+	<div class="login-panel-derecho">
+		<div class="login-form-contenedor">
+
+			<h1 class="login-titulo">Bienvenido</h1>
+			<p class="login-subtitulo">Ingresa tus credenciales para
+				continuar</p>
+
+			<h:form>
+
+				<!-- Mensaje de error -->
+				<h:panelGroup rendered="#{not empty loginBean.mensajeError}">
+					<div class="login-error">#{loginBean.mensajeError}</div>
+				</h:panelGroup>
+
+				<!-- Campo usuario -->
+				<div class="login-campo">
+					<label class="login-label">Usuario</label>
+					<h:inputText value="#{loginBean.usuario}" styleClass="login-input"
+						placeholder="Ingresa tu usuario" required="true"
+						requiredMessage="El usuario es obligatorio" />
+				</div>
+
+				<!-- Campo contraseña -->
+				<div class="login-campo">
+					<label class="login-label">Contraseña</label>
+					<h:inputSecret value="#{loginBean.contrasena}"
+						styleClass="login-input" placeholder="••••••••" required="true"
+						requiredMessage="La contraseña es obligatoria" />
+				</div>
+
+				<!-- Boton -->
+				<h:commandButton value="Ingresar" action="#{loginBean.login}"
+					styleClass="login-btn" />
+
+			</h:form>
+
+			<div class="login-footer">StyleStore © 2026</div>
+
+		</div>
+	</div>
+</h:body>
+</html>

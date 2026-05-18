@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="jakarta.faces.html"
+	xmlns:ui="jakarta.faces.facelets" xmlns:f="jakarta.faces.core">
+
+<ui:composition template="/WEB-INF/templates/plantilla.xhtml">
+	<ui:define name="contenido">
+
+		<h:outputStylesheet library="css" name="vistas.css" />
+
+		<h1 class="pagina-titulo">Proveedores</h1>
+		<p class="pagina-subtitulo">Gestión de proveedores del sistema</p>
+
+		<h:panelGroup rendered="#{not empty proveedorBean.mensajeExito}">
+			<div class="mensaje-exito">#{proveedorBean.mensajeExito}</div>
+		</h:panelGroup>
+		<h:panelGroup rendered="#{not empty proveedorBean.mensajeError}">
+			<div class="mensaje-error">#{proveedorBean.mensajeError}</div>
+		</h:panelGroup>
+
+		<div class="panel-grid">
+
+			<!-- Formulario -->
+			<div class="card">
+				<div class="card-titulo">Nuevo proveedor</div>
+				<h:form>
+					<div class="form-grid">
+
+						<div class="form-campo form-grid-full">
+							<label class="form-label">Nombre</label>
+							<h:inputText id="nombreProv"
+								value="#{proveedorBean.proveedor.nombre}"
+								styleClass="form-input" required="true"
+								requiredMessage="El nombre es obligatorio">
+								<f:validateLength minimum="2" maximum="100" />
+							</h:inputText>
+							<h:message for="nombreProv" styleClass="mensaje-error" />
+						</div>
+
+						<div class="form-campo">
+							<label class="form-label">Teléfono</label>
+							<h:inputText id="telefono"
+								value="#{proveedorBean.proveedor.telefono}"
+								styleClass="form-input" required="true"
+								requiredMessage="El teléfono es obligatorio">
+								<f:validateLength minimum="7" maximum="15" />
+							</h:inputText>
+							<h:message for="telefono" styleClass="mensaje-error" />
+						</div>
+
+						<div class="form-campo">
+							<label class="form-label">Correo</label>
+							<h:inputText id="correo"
+								value="#{proveedorBean.proveedor.correo}"
+								styleClass="form-input" required="true"
+								requiredMessage="El correo es obligatorio"
+								validatorMessage="El correo debe tener formato válido (ejemplo@dominio.com)">
+								<f:validateRegex pattern="^[^@\s]+@[^@\s]+\.[^@\s]+$" />
+							</h:inputText>
+							<h:message for="correo" styleClass="mensaje-error" />
+						</div>
+
+					</div>
+
+					<div class="btn-grupo">
+						<h:commandButton value="Registrar"
+							action="#{proveedorBean.registrar}" styleClass="btn-primario" />
+						<h:commandButton value="Limpiar" action="#{proveedorBean.nuevo}"
+							styleClass="btn-secundario" immediate="true" />
+					</div>
+				</h:form>
+			</div>
+
+			<!-- Tabla -->
+			<div class="card">
+				<div class="card-titulo">Proveedores registrados</div>
+				<div class="tabla-contenedor">
+					<table class="tabla">
+						<thead>
+							<tr>
+								<th>Nombre</th>
+								<th>Teléfono</th>
+								<th>Correo</th>
+								<th>Acciones</th>
+							</tr>
+						</thead>
+						<tbody>
+							<ui:repeat value="#{proveedorBean.listaProveedores}" var="prov">
+								<tr>
+									<td>#{prov.nombre}</td>
+									<td>#{prov.telefono}</td>
+									<td>#{prov.correo}</td>
+									<td><h:form>
+											<h:commandButton value="Cargar"
+												action="#{proveedorBean.cargarProveedor(prov.idProveedor)}"
+												styleClass="btn-tabla" />
+										</h:form></td>
+								</tr>
+							</ui:repeat>
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+		</div>
+
+	</ui:define>
+</ui:composition>
+</html>

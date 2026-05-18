@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="jakarta.faces.html"
+	xmlns:ui="jakarta.faces.facelets" xmlns:f="jakarta.faces.core">
+
+<ui:composition template="/WEB-INF/templates/plantilla.xhtml">
+	<ui:define name="contenido">
+
+		<h:outputStylesheet library="css" name="vistas.css" />
+
+		<h1 class="pagina-titulo">Consultas</h1>
+		<p class="pagina-subtitulo">Consulta entradas de mercancía y
+			productos</p>
+
+		<h:panelGroup rendered="#{not empty consultaBean.mensajeError}">
+			<div class="mensaje-error">#{consultaBean.mensajeError}</div>
+		</h:panelGroup>
+
+		<div class="card">
+			<div class="card-titulo">Parámetros de consulta</div>
+			<h:form>
+				<div class="form-grid">
+
+					<div class="form-campo">
+						<label class="form-label">Consulta</label>
+						<h:selectOneMenu value="#{consultaBean.consultaSeleccionada}"
+							styleClass="form-select">
+							<f:selectItem itemLabel="Seleccionar consulta..." itemValue="" />
+							<f:selectItem itemLabel="Todos los productos"
+								itemValue="productos" />
+							<f:selectItem itemLabel="Inventario por producto (ID)"
+								itemValue="inventario" />
+							<f:selectItem itemLabel="Entradas de mercancía"
+								itemValue="entradas" />
+							<f:selectItem itemLabel="Detalle de entrada (ID)"
+								itemValue="detalle-entrada" />
+						</h:selectOneMenu>
+					</div>
+
+					<div class="form-campo">
+						<label class="form-label">ID filtro (si aplica)</label>
+						<h:inputText value="#{consultaBean.idFiltro}"
+							styleClass="form-input" placeholder="ID del registro" />
+					</div>
+
+				</div>
+				<div class="btn-grupo">
+					<h:commandButton value="Ejecutar consulta"
+						action="#{consultaBean.ejecutarConsulta}"
+						styleClass="btn-primario" />
+				</div>
+			</h:form>
+		</div>
+
+		<!-- Resultado: Productos -->
+		<h:panelGroup rendered="#{not empty consultaBean.listaProductos}">
+			<div class="card">
+				<div class="card-titulo">Resultados — Productos</div>
+				<div class="tabla-contenedor">
+					<table class="tabla">
+						<thead>
+							<tr>
+								<th>Código</th>
+								<th>Nombre</th>
+								<th>Categoría</th>
+								<th>Precio base</th>
+								<th>Estado</th>
+							</tr>
+						</thead>
+						<tbody>
+							<ui:repeat value="#{consultaBean.listaProductos}" var="prod">
+								<tr>
+									<td>#{prod.codigo}</td>
+									<td>#{prod.nombre}</td>
+									<td>#{prod.categoria.nombre}</td>
+									<td>$#{prod.precioBase}</td>
+									<td>#{prod.estado}</td>
+								</tr>
+							</ui:repeat>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</h:panelGroup>
+
+		<!-- Resultado: Inventario -->
+		<h:panelGroup rendered="#{not empty consultaBean.listaInventario}">
+			<div class="card">
+				<div class="card-titulo">Resultados — Inventario</div>
+				<div class="tabla-contenedor">
+					<table class="tabla">
+						<thead>
+							<tr>
+								<th>ID</th>
+								<th>Producto</th>
+								<th>Talla</th>
+								<th>Color</th>
+								<th>Stock</th>
+								<th>Disponible</th>
+							</tr>
+						</thead>
+						<tbody>
+							<ui:repeat value="#{consultaBean.listaInventario}" var="inv">
+								<tr>
+									<td>#{inv.idInventario}</td>
+									<td>#{inv.producto.nombre}</td>
+									<td>#{inv.talla.nombre}</td>
+									<td>#{inv.color.nombre}</td>
+									<td>#{inv.stock}</td>
+									<td>#{inv.stockDisponible}</td>
+								</tr>
+							</ui:repeat>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</h:panelGroup>
+
+		<!-- Resultado: Entradas -->
+		<h:panelGroup rendered="#{not empty consultaBean.listaEntradas}">
+			<div class="card">
+				<div class="card-titulo">Resultados — Entradas de mercancía</div>
+				<div class="tabla-contenedor">
+					<table class="tabla">
+						<thead>
+							<tr>
+								<th>ID</th>
+								<th>Fecha</th>
+								<th>Proveedor</th>
+								<th>Empleado</th>
+							</tr>
+						</thead>
+						<tbody>
+							<ui:repeat value="#{consultaBean.listaEntradas}" var="ent">
+								<tr>
+									<td>#{ent.idEntrada}</td>
+									<td>#{ent.fecha}</td>
+									<td>#{ent.proveedor.nombre}</td>
+									<td>#{ent.empleado.nombre} #{ent.empleado.apellido}</td>
+								</tr>
+							</ui:repeat>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</h:panelGroup>
+
+		<!-- Resultado: Detalle entrada -->
+		<h:panelGroup
+			rendered="#{not empty consultaBean.listaDetallesEntrada}">
+			<div class="card">
+				<div class="card-titulo">Resultados — Detalle de entrada</div>
+				<div class="tabla-contenedor">
+					<table class="tabla">
+						<thead>
+							<tr>
+								<th>Producto</th>
+								<th>Talla</th>
+								<th>Color</th>
+								<th>Cantidad</th>
+								<th>Precio unit.</th>
+							</tr>
+						</thead>
+						<tbody>
+							<ui:repeat value="#{consultaBean.listaDetallesEntrada}" var="det">
+								<tr>
+									<td>#{det.inventario.producto.nombre}</td>
+									<td>#{det.inventario.talla.nombre}</td>
+									<td>#{det.inventario.color.nombre}</td>
+									<td>#{det.cantidad}</td>
+									<td>$#{det.precioUnitario}</td>
+								</tr>
+							</ui:repeat>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</h:panelGroup>
+
+	</ui:define>
+</ui:composition>
+</html>

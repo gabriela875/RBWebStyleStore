@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="jakarta.faces.html"
+	xmlns:ui="jakarta.faces.facelets" xmlns:f="jakarta.faces.core">
+
+<ui:composition template="/WEB-INF/templates/plantilla.xhtml">
+	<ui:define name="contenido">
+
+		<h:outputStylesheet library="css" name="vistas.css" />
+
+		<h1 class="pagina-titulo">Inventario</h1>
+		<p class="pagina-subtitulo">Stock por combinación de producto,
+			talla y color</p>
+
+		<h:panelGroup rendered="#{not empty inventarioBean.mensajeExito}">
+			<div class="mensaje-exito">#{inventarioBean.mensajeExito}</div>
+		</h:panelGroup>
+		<h:panelGroup rendered="#{not empty inventarioBean.mensajeError}">
+			<div class="mensaje-error">#{inventarioBean.mensajeError}</div>
+		</h:panelGroup>
+
+		<div class="panel-grid">
+
+			<div>
+				<!-- Buscar por producto -->
+				<div class="card">
+					<div class="card-titulo">Buscar por producto</div>
+					<h:form>
+						<div class="form-campo">
+							<label class="form-label">Producto</label>
+							<h:selectOneMenu id="productoBuscar"
+								value="#{inventarioBean.idProductoFiltro}"
+								styleClass="form-select" required="true"
+								requiredMessage="Debe seleccionar un producto">
+								<f:selectItem itemLabel="Seleccionar..." itemValue="0" />
+								<f:selectItems value="#{inventarioBean.listaProductos}"
+									var="prod" itemLabel="#{prod.nombre}"
+									itemValue="#{prod.idProducto}" />
+							</h:selectOneMenu>
+							<h:message for="productoBuscar" styleClass="mensaje-error" />
+						</div>
+						<div class="btn-grupo">
+							<h:commandButton value="Buscar"
+								action="#{inventarioBean.buscarPorProducto}"
+								styleClass="btn-primario" />
+						</div>
+					</h:form>
+				</div>
+
+				<!-- Ajuste manual -->
+				<div class="card">
+					<div class="card-titulo">Ajuste manual de stock</div>
+					<h:form>
+						<div class="form-grid">
+
+							<div class="form-campo form-grid-full">
+								<label class="form-label">ID Inventario</label>
+								<h:inputText id="idInventarioAjuste"
+									value="#{inventarioBean.idInventarioAjuste}"
+									styleClass="form-input" required="true"
+									requiredMessage="El ID de inventario es obligatorio"
+									placeholder="ID de la combinación">
+									<f:validateLongRange minimum="1"
+										message="Debe ingresar un ID válido" />
+								</h:inputText>
+								<h:message for="idInventarioAjuste" styleClass="mensaje-error" />
+							</div>
+
+							<div class="form-campo form-grid-full">
+								<label class="form-label">Cantidad ajustada</label>
+								<h:inputText id="cantidadAjuste"
+									value="#{inventarioBean.ajuste.cantidadAjustada}"
+									styleClass="form-input" required="true"
+									requiredMessage="La cantidad es obligatoria"
+									placeholder="Positivo suma, negativo resta" />
+								<h:message for="cantidadAjuste" styleClass="mensaje-error" />
+							</div>
+
+							<div class="form-campo form-grid-full">
+								<label class="form-label">Motivo</label>
+								<h:inputText id="motivoAjuste"
+									value="#{inventarioBean.ajuste.motivo}" styleClass="form-input"
+									required="true" requiredMessage="El motivo es obligatorio">
+									<f:validateLength minimum="5" maximum="200" />
+								</h:inputText>
+								<h:message for="motivoAjuste" styleClass="mensaje-error" />
+							</div>
+
+						</div>
+						<div class="btn-grupo">
+							<h:commandButton value="Registrar ajuste"
+								action="#{inventarioBean.registrarAjuste}"
+								styleClass="btn-primario" />
+						</div>
+					</h:form>
+				</div>
+			</div>
+
+			<!-- Tabla combinaciones -->
+			<div class="card">
+				<div class="card-titulo">Combinaciones de inventario</div>
+				<h:panelGroup rendered="#{empty inventarioBean.listaInventario}">
+					<p style="font-size: 13px; color: #9C7B6B">Seleccione un
+						producto para ver su inventario.</p>
+				</h:panelGroup>
+				<h:panelGroup rendered="#{not empty inventarioBean.listaInventario}">
+					<div class="tabla-contenedor">
+						<table class="tabla">
+							<thead>
+								<tr>
+									<th>ID</th>
+									<th>Producto</th>
+									<th>Talla</th>
+									<th>Color</th>
+									<th>Stock total</th>
+									<th>Reservado</th>
+									<th>Disponible</th>
+								</tr>
+							</thead>
+							<tbody>
+								<ui:repeat value="#{inventarioBean.listaInventario}" var="inv">
+									<tr>
+										<td>#{inv.idInventario}</td>
+										<td>#{inv.producto.nombre}</td>
+										<td>#{inv.talla.nombre}</td>
+										<td>#{inv.color.nombre}</td>
+										<td>#{inv.stock}</td>
+										<td>#{inv.stockReservado}</td>
+										<td>#{inv.stockDisponible}</td>
+									</tr>
+								</ui:repeat>
+							</tbody>
+						</table>
+					</div>
+				</h:panelGroup>
+			</div>
+
+		</div>
+
+	</ui:define>
+</ui:composition>
+</html>

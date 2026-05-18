@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee 
+                        https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+    version="6.0">
+
+    <!-- JSF Servlet -->
+    <servlet>
+        <servlet-name>Faces Servlet</servlet-name>
+        <servlet-class>jakarta.faces.webapp.FacesServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Faces Servlet</servlet-name>
+        <url-pattern>*.xhtml</url-pattern>
+    </servlet-mapping>
+
+    <!-- Pagina de inicio -->
+    <welcome-file-list>
+        <welcome-file>index.xhtml</welcome-file>
+    </welcome-file-list>
+
+    <!-- Pagina de error 403 - acceso denegado por rol -->
+    <error-page>
+        <error-code>403</error-code>
+        <location>/acceso-denegado.xhtml</location>
+    </error-page>
+
+    <!-- Pagina de error 404 -->
+    <error-page>
+        <error-code>404</error-code>
+        <location>/index.xhtml</location>
+    </error-page>
+
+    <!-- Tiempo de sesion: 30 minutos (regla 77) -->
+    <session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
+
+    <!-- Weld CDI listener para Tomcat -->
+    <listener>
+        <listener-class>org.jboss.weld.environment.servlet.Listener</listener-class>
+    </listener>
+    <resource-env-ref>
+        <resource-env-ref-name>BeanManager</resource-env-ref-name>
+        <resource-env-ref-type>jakarta.enterprise.inject.spi.BeanManager</resource-env-ref-type>
+    </resource-env-ref>
+	<context-param>
+    <param-name>jakarta.faces.PROJECT_STAGE</param-name>
+    <param-value>Development</param-value>
+</context-param>
+</web-app>

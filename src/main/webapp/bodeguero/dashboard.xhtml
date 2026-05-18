@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="jakarta.faces.html"
+	xmlns:ui="jakarta.faces.facelets">
+
+<ui:composition template="/WEB-INF/templates/plantilla.xhtml">
+	<ui:define name="contenido">
+
+		<h:outputStylesheet library="css" name="dashboard.css" />
+
+		<div class="bienvenida-banda">
+			<div class="bienvenida-nombre">Bienvenido,
+				#{sessionBean.empleadoActivo.nombre}</div>
+			<div class="bienvenida-fecha">Bodeguero — Panel de
+				abastecimiento</div>
+		</div>
+
+		<h1 class="pagina-titulo">Dashboard</h1>
+		<p class="pagina-subtitulo">Selecciona una opción para continuar</p>
+
+		<div class="card">
+			<div class="card-titulo">Abastecimiento</div>
+			<div class="accesos-grid">
+				<h:link outcome="/bodeguero/mercancia" styleClass="acceso-card">
+					<div class="acceso-titulo">Entrada Mercancía</div>
+					<div class="acceso-desc">Registrar ingreso de productos</div>
+				</h:link>
+				<h:link outcome="/bodeguero/inventario" styleClass="acceso-card">
+					<div class="acceso-titulo">Inventario</div>
+					<div class="acceso-desc">Ver stock y registrar ajustes</div>
+				</h:link>
+				<h:link outcome="/bodeguero/consultas" styleClass="acceso-card">
+					<div class="acceso-titulo">Consultas</div>
+					<div class="acceso-desc">Ver entradas y productos</div>
+				</h:link>
+			</div>
+		</div>
+
+	</ui:define>
+</ui:composition>
+</html>

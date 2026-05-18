@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="jakarta.faces.html"
+	xmlns:ui="jakarta.faces.facelets" xmlns:f="jakarta.faces.core">
+
+<ui:composition template="/WEB-INF/templates/plantilla.xhtml">
+	<ui:define name="contenido">
+
+		<h:outputStylesheet library="css" name="vistas.css" />
+
+		<h1 class="pagina-titulo">Empleados</h1>
+		<p class="pagina-subtitulo">Registro y gestión del personal</p>
+
+		<!-- Mensajes globales -->
+		<h:panelGroup rendered="#{not empty empleadoBean.mensajeExito}">
+			<div class="mensaje-exito">#{empleadoBean.mensajeExito}</div>
+		</h:panelGroup>
+		<h:panelGroup rendered="#{not empty empleadoBean.mensajeError}">
+			<div class="mensaje-error">#{empleadoBean.mensajeError}</div>
+		</h:panelGroup>
+
+		<div class="panel-grid">
+
+			<!-- Formulario registro -->
+			<div class="card">
+				<div class="card-titulo">Nuevo empleado</div>
+				<h:form>
+					<div class="form-grid">
+
+						<div class="form-campo">
+							<label class="form-label">Nombre</label>
+							<h:inputText id="nombre" value="#{empleadoBean.empleado.nombre}"
+								styleClass="form-input" required="true"
+								requiredMessage="El nombre es obligatorio">
+								<f:validateLength minimum="2" maximum="50" />
+							</h:inputText>
+							<h:message for="nombre" styleClass="mensaje-error" />
+						</div>
+
+						<div class="form-campo">
+							<label class="form-label">Apellido</label>
+							<h:inputText id="apellido"
+								value="#{empleadoBean.empleado.apellido}"
+								styleClass="form-input" required="true"
+								requiredMessage="El apellido es obligatorio">
+								<f:validateLength minimum="2" maximum="50" />
+							</h:inputText>
+							<h:message for="apellido" styleClass="mensaje-error" />
+						</div>
+
+						<div class="form-campo">
+							<label class="form-label">Número de documento</label>
+							<h:inputText id="numDocumento"
+								value="#{empleadoBean.empleado.numDocumento}"
+								styleClass="form-input" required="true"
+								requiredMessage="El documento es obligatorio">
+								<f:validateLength minimum="5" maximum="20" />
+							</h:inputText>
+							<h:message for="numDocumento" styleClass="mensaje-error" />
+						</div>
+
+						<div class="form-campo">
+							<label class="form-label">Cargo</label>
+							<h:selectOneMenu id="cargo"
+								value="#{empleadoBean.idCargoSeleccionado}"
+								styleClass="form-select" required="true"
+								requiredMessage="El cargo es obligatorio">
+								<f:selectItem itemLabel="Seleccionar..." itemValue="0" />
+								<f:selectItems value="#{empleadoBean.listaCargos}" var="c"
+									itemLabel="#{c.tipo}" itemValue="#{c.idCargo}" />
+							</h:selectOneMenu>
+							<h:message for="cargo" styleClass="mensaje-error" />
+						</div>
+
+						<div class="form-campo">
+							<label class="form-label">Usuario</label>
+							<h:inputText id="usuario"
+								value="#{empleadoBean.empleado.usuario}" styleClass="form-input"
+								required="true" requiredMessage="El usuario es obligatorio">
+								<f:validateLength minimum="4" maximum="30" />
+							</h:inputText>
+							<h:message for="usuario" styleClass="mensaje-error" />
+						</div>
+
+						<div class="form-campo">
+							<label class="form-label">Contraseña</label>
+							<h:inputSecret id="contrasena"
+								value="#{empleadoBean.empleado.contrasena}"
+								styleClass="form-input" required="true"
+								requiredMessage="La contraseña es obligatoria">
+								<f:validateLength minimum="6" maximum="50" />
+							</h:inputSecret>
+							<h:message for="contrasena" styleClass="mensaje-error" />
+						</div>
+
+					</div>
+
+					<div class="btn-grupo">
+						<h:commandButton value="Registrar"
+							action="#{empleadoBean.registrar}" styleClass="btn-primario">
+							<f:ajax execute="@form" render="@all" />
+						</h:commandButton>
+					</div>
+
+				</h:form>
+			</div>
+
+			<!-- Tabla empleados -->
+			<div class="card">
+				<div class="card-titulo">Personal registrado</div>
+				<div class="tabla-contenedor">
+					<table class="tabla">
+						<thead>
+							<tr>
+								<th>Nombre</th>
+								<th>Documento</th>
+								<th>Cargo</th>
+								<th>Usuario</th>
+								<th>Estado</th>
+								<th>Acciones</th>
+							</tr>
+						</thead>
+						<tbody>
+							<ui:repeat value="#{empleadoBean.listaEmpleados}" var="emp">
+								<tr>
+									<td>#{emp.nombre} #{emp.apellido}</td>
+									<td>#{emp.numDocumento}</td>
+									<td>#{emp.cargo.tipo}</td>
+									<td>#{emp.usuario}</td>
+									<td><h:panelGroup rendered="#{emp.estado}">
+											<span class="badge badge-activo">Activo</span>
+										</h:panelGroup> <h:panelGroup rendered="#{!emp.estado}">
+											<span class="badge badge-inactivo">Inactivo</span>
+										</h:panelGroup></td>
+									<td>
+										<div class="acciones">
+											<h:form>
+												<h:commandButton value="Desactivar" rendered="#{emp.estado}"
+													action="#{empleadoBean.desactivar(emp.idEmpleado)}"
+													styleClass="btn-tabla-peligro" />
+												<h:commandButton value="Activar" rendered="#{!emp.estado}"
+													action="#{empleadoBean.activar(emp.idEmpleado)}"
+													styleClass="btn-tabla" />
+											</h:form>
+											<h:form>
+												<h:commandButton value="Desbloquear"
+													rendered="#{emp.bloqueado}"
+													action="#{authBean.desbloquear(emp.idEmpleado)}"
+													styleClass="btn-tabla" />
+											</h:form>
+										</div>
+									</td>
+								</tr>
+							</ui:repeat>
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+		</div>
+
+	</ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="jakarta.faces.html"
+	xmlns:ui="jakarta.faces.facelets">
+
+<ui:composition template="/WEB-INF/templates/plantilla.xhtml">
+	<ui:define name="contenido">
+
+		<h:outputStylesheet library="css" name="dashboard.css" />
+
+		<div class="bienvenida-banda">
+			<div class="bienvenida-nombre">Bienvenido,
+				#{sessionBean.empleadoActivo.nombre}</div>
+			<div class="bienvenida-fecha">Administrador — Panel de control
+			</div>
+		</div>
+
+		<h1 class="pagina-titulo">Dashboard</h1>
+		<p class="pagina-subtitulo">Selecciona una opción para continuar</p>
+
+		<div class="card">
+			<div class="card-titulo">Gestión</div>
+			<div class="accesos-grid">
+				<h:link outcome="/admin/empleados" styleClass="acceso-card">
+					<div class="acceso-titulo">Empleados</div>
+					<div class="acceso-desc">Gestionar personal y accesos</div>
+				</h:link>
+				<h:link outcome="/admin/productos" styleClass="acceso-card">
+					<div class="acceso-titulo">Productos</div>
+					<div class="acceso-desc">Catálogo y descuentos</div>
+				</h:link>
+				<h:link outcome="/admin/proveedores" styleClass="acceso-card">
+					<div class="acceso-titulo">Proveedores</div>
+					<div class="acceso-desc">Gestionar proveedores</div>
+				</h:link>
+				<h:link outcome="/admin/inventario" styleClass="acceso-card">
+					<div class="acceso-titulo">Inventario</div>
+					<div class="acceso-desc">Stock por combinación</div>
+				</h:link>
+			</div>
+		</div>
+
+		<div class="card">
+			<div class="card-titulo">Operaciones</div>
+			<div class="accesos-grid">
+				<h:link outcome="/admin/ventas" styleClass="acceso-card">
+					<div class="acceso-titulo">Ventas</div>
+					<div class="acceso-desc">Ver y gestionar ventas</div>
+				</h:link>
+				<h:link outcome="/admin/consultas" styleClass="acceso-card">
+					<div class="acceso-titulo">Consultas</div>
+					<div class="acceso-desc">Reportes del sistema</div>
+				</h:link>
+			</div>
+		</div>
+
+	</ui:define>
+</ui:composition>
+</html>
