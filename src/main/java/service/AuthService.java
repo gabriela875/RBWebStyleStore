@@ -18,28 +18,27 @@ public class AuthService {
 
 		Empleado empleado = empleadoRepo.buscarPorUsuario(usuario);
 
-		// Verificar que el usuario exista
 		if (empleado == null) {
-			return null;
+			throw new IllegalArgumentException("El usuario no existe en el sistema");
 		}
 
-		// Verificar que la cuenta no este bloqueada
 		if (empleado.isBloqueado()) {
-			return null;
+			throw new IllegalStateException("La cuenta está bloqueada. Contacte al Administrador para desbloquearla");
 		}
 
-		// Verificar que el empleado este activo
 		if (!empleado.isEstado()) {
-			return null;
+			throw new IllegalStateException("El empleado está inactivo y no puede iniciar sesión");
 		}
 
-		// Verificar contrasena
 		if (!empleado.getContrasena().equals(contrasena)) {
 			registrarIntentoFallido(empleado);
-			return null;
+			int intentosRestantes = MAX_INTENTOS - empleado.getIntentosFallidos();
+			if (empleado.isBloqueado()) {
+				throw new IllegalStateException("La cuenta ha sido bloqueada por demasiados intentos fallidos");
+			}
+			throw new IllegalArgumentException("Contraseña incorrecta");
 		}
 
-		// Login exitoso: reiniciar intentos fallidos
 		empleado.setIntentosFallidos(0);
 		empleadoRepo.actualizar(empleado);
 		return empleado;

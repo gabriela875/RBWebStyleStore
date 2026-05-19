@@ -25,28 +25,21 @@ public class LoginBean {
 
 		mensajeError = null;
 
-		Empleado empleado = authService.login(usuario, contrasena);
+		try {
+			Empleado empleado = authService.login(usuario, contrasena);
+			sessionBean.iniciarSesion(empleado);
 
-		// Si el login fallo mostrar mensaje
-		if (empleado == null) {
-			mensajeError = "Usuario o contraseña incorrectos, " + "o la cuenta está bloqueada/inactiva";
-			return null;
+			String cargo = empleado.getCargo().getTipo();
+			if (cargo.equals("Administrador")) {
+				return "admin";
+			} else if (cargo.equals("Vendedor")) {
+				return "vendedor";
+			} else if (cargo.equals("Bodeguero")) {
+				return "bodeguero";
+			}
+		} catch (Exception e) {
+			mensajeError = e.getMessage();
 		}
-
-		// Guardar empleado en la sesion
-		sessionBean.iniciarSesion(empleado);
-
-		// Redirigir segun el cargo
-		String cargo = empleado.getCargo().getTipo();
-
-		if (cargo.equals("Administrador")) {
-			return "admin";
-		} else if (cargo.equals("Vendedor")) {
-			return "vendedor";
-		} else if (cargo.equals("Bodeguero")) {
-			return "bodeguero";
-		}
-
 		return null;
 	}
 

@@ -41,7 +41,9 @@ public class ProductoBean implements Serializable {
 	private int idCategoriaSeleccionada;
 	private int idProveedorSeleccionado;
 	private int idProductoDescuento;
-
+	private int idProductoActualizar;
+	private String fechaInicioDescuento;
+	private String fechaFinDescuento;
 	// Campo para actualizar precio desde la tabla
 	private BigDecimal nuevoPrecio;
 
@@ -98,6 +100,25 @@ public class ProductoBean implements Serializable {
 		return null;
 	}
 
+	public String eliminar(int idProducto) {
+		mensajeExito = null;
+		mensajeError = null;
+
+		if (!sessionBean.isAdmin()) {
+			mensajeError = "Solo el Administrador puede eliminar productos";
+			return null;
+		}
+
+		try {
+			productoService.eliminar(idProducto);
+			mensajeExito = "Producto eliminado correctamente";
+			listaProductos = null;
+		} catch (Exception e) {
+			mensajeError = e.getMessage();
+		}
+		return null;
+	}
+
 	// Actualizar precio — lee el precio del campo nuevoPrecio del bean
 	public String actualizarPrecio(int idProducto) {
 		mensajeExito = null;
@@ -144,6 +165,72 @@ public class ProductoBean implements Serializable {
 		return null;
 	}
 
+	public String editar() {
+		mensajeExito = null;
+		mensajeError = null;
+
+		if (!sessionBean.isAdmin()) {
+			mensajeError = "Solo el Administrador puede editar productos";
+			return null;
+		}
+
+		Categoria categoria = null;
+		for (Categoria c : getListaCategorias()) {
+			if (c.getIdCategoria() == idCategoriaSeleccionada) {
+				categoria = c;
+				break;
+			}
+		}
+
+		Proveedor proveedor = null;
+		for (Proveedor p : getListaProveedores()) {
+			if (p.getIdProveedor() == idProveedorSeleccionado) {
+				proveedor = p;
+				break;
+			}
+		}
+
+		if (categoria == null) {
+			mensajeError = "Debe seleccionar una categoría";
+			return null;
+		}
+		if (proveedor == null) {
+			mensajeError = "Debe seleccionar un proveedor";
+			return null;
+		}
+
+		producto.setCategoria(categoria);
+		producto.setProveedor(proveedor);
+
+		try {
+			productoService.editar(producto);
+			mensajeExito = "Producto actualizado correctamente";
+			listaProductos = null;
+		} catch (Exception e) {
+			mensajeError = e.getMessage();
+		}
+		return null;
+	}
+
+	public String marcarAgotado(int idProducto) {
+		mensajeExito = null;
+		mensajeError = null;
+
+		if (!sessionBean.isAdmin() && !sessionBean.isBodeguero()) {
+			mensajeError = "No tiene permisos para marcar productos como agotados";
+			return null;
+		}
+
+		try {
+			productoService.marcarAgotado(idProducto);
+			mensajeExito = "Producto marcado como agotado";
+			listaProductos = null;
+		} catch (Exception e) {
+			mensajeError = e.getMessage();
+		}
+		return null;
+	}
+
 	// Registrar descuento — el idProducto viene del selector idProductoDescuento
 	public String registrarDescuento(int idProducto) {
 		mensajeExito = null;
@@ -156,6 +243,14 @@ public class ProductoBean implements Serializable {
 
 		if (idProducto == 0) {
 			mensajeError = "Debe seleccionar un producto";
+			return null;
+		}
+
+		try {
+			descuento.setFechaInicio(java.time.LocalDate.parse(fechaInicioDescuento));
+			descuento.setFechaFin(java.time.LocalDate.parse(fechaFinDescuento));
+		} catch (Exception ex) {
+			mensajeError = "El formato de fecha debe ser AAAA-MM-DD (ejemplo: 2026-05-17)";
 			return null;
 		}
 
@@ -199,6 +294,8 @@ public class ProductoBean implements Serializable {
 	// Cargar producto para ver detalle
 	public String cargarProducto(int idProducto) {
 		producto = productoService.buscarPorId(idProducto);
+		idCategoriaSeleccionada = producto.getCategoria().getIdCategoria();
+	    idProveedorSeleccionado = producto.getProveedor().getIdProveedor();
 		listaInventario = inventarioService.listarPorProducto(idProducto);
 		return null;
 	}
@@ -336,5 +433,29 @@ public class ProductoBean implements Serializable {
 
 	public void setNuevoPrecio(BigDecimal nuevoPrecio) {
 		this.nuevoPrecio = nuevoPrecio;
+	}
+
+	public int getIdProductoActualizar() {
+		return idProductoActualizar;
+	}
+
+	public void setIdProductoActualizar(int id) {
+		this.idProductoActualizar = id;
+	}
+
+	public String getFechaInicioDescuento() {
+		return fechaInicioDescuento;
+	}
+
+	public void setFechaInicioDescuento(String f) {
+		this.fechaInicioDescuento = f;
+	}
+
+	public String getFechaFinDescuento() {
+		return fechaFinDescuento;
+	}
+
+	public void setFechaFinDescuento(String f) {
+		this.fechaFinDescuento = f;
 	}
 }

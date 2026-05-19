@@ -28,28 +28,10 @@ public class AbastecimientoService {
 
 	// Registrar una entrada de mercancia con sus detalles
 	public void registrarEntrada(EntradaMercancia entrada, List<DetalleEntrada> detalles) {
-
-		// Registrar fecha y hora de la entrada
 		entrada.setFecha(LocalDateTime.now());
 
-		// Validar cada detalle antes de guardar
 		for (DetalleEntrada detalle : detalles) {
-
-			// Obtener el inventario de esa combinacion
-			Inventario inventario = inventarioRepo.buscarPorId(detalle.getInventario().getIdInventario());
-
-			Producto producto = inventario.getProducto();
-
-			// El proveedor del detalle debe coincidir con el del producto
-			if (producto.getProveedor().getIdProveedor() != detalle.getProveedor().getIdProveedor()) {
-				throw new IllegalArgumentException(
-						"El proveedor del detalle no coincide con el del producto: " + producto.getNombre());
-			}
-
-			// El proveedor del detalle debe coincidir con el de la entrada
-			if (entrada.getProveedor().getIdProveedor() != detalle.getProveedor().getIdProveedor()) {
-				throw new IllegalArgumentException("El proveedor del detalle no coincide con el de la entrada");
-			}
+			Producto producto = productoService.buscarPorId(detalle.getInventario().getProducto().getIdProducto());
 
 			// No se puede ingresar mercancia de un producto descontinuado
 			if (producto.getEstado() == Producto.EstadoProducto.descontinuado) {
@@ -57,21 +39,46 @@ public class AbastecimientoService {
 						"No se puede ingresar mercancía de un producto descontinuado: " + producto.getNombre());
 			}
 
-			// La cantidad debe ser mayor a cero
+			// El proveedor de la entrada debe coincidir con el del producto
+			if (producto.getProveedor().getIdProveedor() != entrada.getProveedor().getIdProveedor()) {
+				throw new IllegalArgumentException(
+						"El proveedor seleccionado no coincide con el proveedor del producto: " + producto.getNombre());
+			}
+
 			if (detalle.getCantidad() <= 0) {
 				throw new IllegalArgumentException("La cantidad debe ser mayor a cero");
 			}
+
+			// Buscar si ya existe la combinacion producto+talla+color
+			Inventario inventario = inventarioRepo.buscarPorProductoTallaColor(
+					detalle.getInventario().getProducto().getIdProducto(),
+					detalle.getInventario().getTalla().getIdTalla(), detalle.getInventario().getColor().getIdColor());
+
+			if (inventario == null) {
+				inventario = new Inventario();
+				inventario.setProducto(
+						productoService.buscarPorId(detalle.getInventario().getProducto().getIdProducto()));
+				inventario.setTalla(detalle.getInventario().getTalla());
+				inventario.setColor(detalle.getInventario().getColor());
+				inventario.setStock(0);
+				inventario.setStockReservado(0);
+				inventarioRepo.guardarConMerge(inventario);
+
+				// Reobtener de BD para tener el ID generado
+				inventario = inventarioRepo.buscarPorProductoTallaColor(
+						detalle.getInventario().getProducto().getIdProducto(),
+						detalle.getInventario().getTalla().getIdTalla(),
+						detalle.getInventario().getColor().getIdColor());
+			}
+
+			detalle.setInventario(inventario);
 		}
 
-		// Guardar la entrada
 		abastecimientoRepo.guardar(entrada);
 
-		// Guardar cada detalle y actualizar el stock
 		for (DetalleEntrada detalle : detalles) {
 			detalle.setEntrada(entrada);
 			abastecimientoRepo.guardarDetalle(detalle);
-
-			// Sumar la cantidad al stock de esa combinacion
 			inventarioService.reponerStock(detalle.getInventario().getIdInventario(), detalle.getCantidad());
 		}
 	}

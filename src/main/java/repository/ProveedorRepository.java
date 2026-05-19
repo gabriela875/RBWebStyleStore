@@ -68,7 +68,7 @@ public class ProveedorRepository {
 	public Proveedor buscarPorCorreo(String correo) {
 		EntityManager em = emf.createEntityManager();
 		try {
-			return em.createQuery("SELECT p FROM Proveedor p WHERE LOWER(p.correo) = LOWER(:correo)", Proveedor.class)
+			return em.createQuery("SELECT p FROM Proveedor p WHERE p.correo = :correo", Proveedor.class)
 					.setParameter("correo", correo).getSingleResult();
 		} catch (NoResultException e) {
 			return null;
@@ -81,7 +81,7 @@ public class ProveedorRepository {
 	public Proveedor buscarPorNombre(String nombre) {
 		EntityManager em = emf.createEntityManager();
 		try {
-			return em.createQuery("SELECT p FROM Proveedor p WHERE LOWER(p.nombre) = LOWER(:nombre)", Proveedor.class)
+			return em.createQuery("SELECT p FROM Proveedor p WHERE p.nombre = :nombre", Proveedor.class)
 					.setParameter("nombre", nombre).getSingleResult();
 		} catch (NoResultException e) {
 			return null;
@@ -110,4 +110,5 @@ public class ProveedorRepository {
 			em.close();
 		}
 	}
+
 }

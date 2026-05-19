@@ -95,6 +95,12 @@
 												action="#{proveedorBean.cargarProveedor(prov.idProveedor)}"
 												styleClass="btn-tabla" />
 										</h:form></td>
+									<td><h:form>
+											<h:commandButton value="Dar de baja"
+												action="#{proveedorBean.darDeBaja(prov.idProveedor)}"
+												styleClass="btn-tabla-peligro"
+												onclick="return confirm('¿Seguro que desea dar de baja a este proveedor?')" />
+										</h:form></td>
 								</tr>
 							</ui:repeat>
 						</tbody>

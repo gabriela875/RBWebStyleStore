@@ -101,6 +101,30 @@ public class InventarioRepository {
 		}
 	}
 
+	public void guardarConMerge(Inventario inventario) {
+		EntityManager em = emf.createEntityManager();
+		try {
+			em.getTransaction().begin();
+
+			// Reattach todas las entidades relacionadas
+			model.Producto prod = em.find(model.Producto.class, inventario.getProducto().getIdProducto());
+			model.Talla talla = em.find(model.Talla.class, inventario.getTalla().getIdTalla());
+			model.Color color = em.find(model.Color.class, inventario.getColor().getIdColor());
+
+			inventario.setProducto(prod);
+			inventario.setTalla(talla);
+			inventario.setColor(color);
+
+			em.persist(inventario);
+			em.getTransaction().commit();
+		} catch (Exception e) {
+			em.getTransaction().rollback();
+			throw e;
+		} finally {
+			em.close();
+		}
+	}
+
 	public List<AjusteInventario> listarAjustesPorInventario(int idInventario) {
 		EntityManager em = emf.createEntityManager();
 		try {

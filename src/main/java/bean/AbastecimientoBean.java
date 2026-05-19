@@ -12,6 +12,9 @@ import util.JpaUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import model.Color;
+import model.Producto;
+import model.Talla;
 
 @Named
 @SessionScoped
@@ -37,33 +40,54 @@ public class AbastecimientoBean implements Serializable {
 	private int idInventarioDetalle;
 	private String mensajeExito;
 	private String mensajeError;
+	private int idProductoDetalle;
+	private int idTallaDetalle;
+	private int idColorDetalle;
+	private List<Producto> listaProductos;
+	private List<Talla> listaTallas;
+	private List<Color> listaColores;
 
 	// Agregar un detalle a la lista temporal
 	public String agregarDetalle() {
 		mensajeExito = null;
 		mensajeError = null;
 
-		if (idInventarioDetalle == 0) {
-			mensajeError = "Debe ingresar el ID del inventario";
+		if (idProductoDetalle == 0) {
+			mensajeError = "Debe seleccionar un producto";
 			return null;
 		}
-
+		if (idTallaDetalle == 0) {
+			mensajeError = "Debe seleccionar una talla";
+			return null;
+		}
+		if (idColorDetalle == 0) {
+			mensajeError = "Debe seleccionar un color";
+			return null;
+		}
 		if (detalleActual.getCantidad() <= 0) {
 			mensajeError = "La cantidad debe ser mayor a cero";
 			return null;
 		}
-
 		if (detalleActual.getPrecioUnitario() == null || detalleActual.getPrecioUnitario().doubleValue() <= 0) {
 			mensajeError = "El precio unitario debe ser mayor a cero";
 			return null;
 		}
 
 		try {
-			// Buscar el inventario y asignarlo al detalle
-			Inventario inv = inventarioService.buscarPorId(idInventarioDetalle);
-			detalleActual.setInventario(inv);
+			// Construir inventario temporal con producto, talla y color
+			EntityManager em = JpaUtil.getEntityManagerFactory().createEntityManager();
+			Inventario inv = new Inventario();
+			try {
+				model.Producto prod = em.find(model.Producto.class, idProductoDetalle);
+				model.Talla talla = em.find(model.Talla.class, idTallaDetalle);
+				model.Color color = em.find(model.Color.class, idColorDetalle);
+				inv.setProducto(prod);
+				inv.setTalla(talla);
+				inv.setColor(color);
+			} finally {
+				em.close();
+			}
 
-			// Asignar el proveedor seleccionado al detalle
 			Proveedor prov = null;
 			for (Proveedor p : getListaProveedores()) {
 				if (p.getIdProveedor() == idProveedorSeleccionado) {
@@ -71,11 +95,13 @@ public class AbastecimientoBean implements Serializable {
 					break;
 				}
 			}
+			detalleActual.setInventario(inv);
 			detalleActual.setProveedor(prov);
-
 			detalles.add(detalleActual);
 			detalleActual = new DetalleEntrada();
-			idInventarioDetalle = 0;
+			idProductoDetalle = 0;
+			idTallaDetalle = 0;
+			idColorDetalle = 0;
 			mensajeExito = "Producto agregado a la entrada";
 		} catch (Exception e) {
 			mensajeError = e.getMessage();
@@ -133,7 +159,10 @@ public class AbastecimientoBean implements Serializable {
 			detalles = new ArrayList<>();
 			idProveedorSeleccionado = 0;
 		} catch (Exception e) {
-			mensajeError = e.getMessage();
+			mensajeError = "Error: " + e.getClass().getSimpleName() + " - " + e.getMessage();
+			if (e.getCause() != null) {
+				mensajeError += " | Causa: " + e.getCause().getMessage();
+			}
 		}
 		return null;
 	}
@@ -149,6 +178,38 @@ public class AbastecimientoBean implements Serializable {
 			}
 		}
 		return listaProveedores;
+	}
+
+	public List<Producto> getListaProductos() {
+		if (listaProductos == null) {
+			EntityManager em = JpaUtil.getEntityManagerFactory().createEntityManager();
+			try {
+				listaProductos = em.createQuery(
+						"SELECT p FROM Producto p WHERE p.estado != model.Producto$EstadoProducto.descontinuado",
+						Producto.class).getResultList();
+			} finally {
+				em.close();
+			}
+		}
+		return listaProductos;
+	}
+
+	public List<Talla> getListaTallas() {
+		EntityManager em = JpaUtil.getEntityManagerFactory().createEntityManager();
+		try {
+			return em.createQuery("SELECT t FROM Talla t", Talla.class).getResultList();
+		} finally {
+			em.close();
+		}
+	}
+
+	public List<Color> getListaColores() {
+		EntityManager em = JpaUtil.getEntityManagerFactory().createEntityManager();
+		try {
+			return em.createQuery("SELECT c FROM Color c", Color.class).getResultList();
+		} finally {
+			em.close();
+		}
 	}
 
 	// Getters y setters
@@ -194,5 +255,29 @@ public class AbastecimientoBean implements Serializable {
 
 	public void setIdInventarioDetalle(int id) {
 		this.idInventarioDetalle = id;
+	}
+
+	public int getIdProductoDetalle() {
+		return idProductoDetalle;
+	}
+
+	public void setIdProductoDetalle(int id) {
+		this.idProductoDetalle = id;
+	}
+
+	public int getIdTallaDetalle() {
+		return idTallaDetalle;
+	}
+
+	public void setIdTallaDetalle(int id) {
+		this.idTallaDetalle = id;
+	}
+
+	public int getIdColorDetalle() {
+		return idColorDetalle;
+	}
+
+	public void setIdColorDetalle(int id) {
+		this.idColorDetalle = id;
 	}
 }

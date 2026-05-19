@@ -21,7 +21,8 @@
 
 		<!-- Formulario nuevo producto -->
 		<div class="card">
-			<div class="card-titulo">Nuevo producto</div>
+			<div class="card-titulo">#{productoBean.producto.idProducto ==
+				0 ? 'Nuevo producto' : 'Editar producto'}</div>
 			<h:form>
 				<div class="form-grid">
 
@@ -113,6 +114,9 @@
 						action="#{productoBean.registrar}" styleClass="btn-primario" />
 					<h:commandButton value="Limpiar" action="#{productoBean.nuevo}"
 						styleClass="btn-secundario" immediate="true" />
+					<h:commandButton value="Guardar cambios"
+						rendered="#{productoBean.producto.idProducto != 0}"
+						action="#{productoBean.editar}" styleClass="btn-primario" />
 				</div>
 			</h:form>
 		</div>
@@ -150,6 +154,7 @@
 										rendered="#{prod.estado.name() == 'descontinuado'}">
 										<span class="badge badge-descontinuado">Descontinuado</span>
 									</h:panelGroup></td>
+
 								<td>
 									<div class="acciones">
 										<h:form>
@@ -159,15 +164,21 @@
 												styleClass="btn-tabla-peligro" />
 										</h:form>
 										<h:form>
-											<h:inputText id="nuevoPrecio"
-												value="#{productoBean.nuevoPrecio}" styleClass="form-input"
-												style="width:100px" placeholder="Nuevo precio">
-												<f:validateDoubleRange minimum="0.01"
-													message="El precio debe ser mayor a cero" />
-											</h:inputText>
-											<h:message for="nuevoPrecio" styleClass="mensaje-error" />
-											<h:commandButton value="Actualizar precio"
-												action="#{productoBean.actualizarPrecio(prod.idProducto)}"
+											<h:commandButton value="Editar"
+												action="#{productoBean.cargarProducto(prod.idProducto)}"
+												styleClass="btn-tabla" />
+										</h:form>
+										<h:form>
+											<h:commandButton value="Eliminar"
+												rendered="#{prod.estado.name() == 'descontinuado'}"
+												action="#{productoBean.eliminar(prod.idProducto)}"
+												styleClass="btn-tabla-peligro"
+												onclick="return confirm('¿Seguro que desea eliminar este producto?')" />
+										</h:form>
+										<h:form>
+											<h:commandButton value="Marcar agotado"
+												rendered="#{prod.estado.name() == 'disponible'}"
+												action="#{productoBean.marcarAgotado(prod.idProducto)}"
 												styleClass="btn-tabla" />
 										</h:form>
 									</div>
@@ -178,7 +189,43 @@
 				</table>
 			</div>
 		</div>
-
+		<!-- Sección separada para actualizar precio -->
+		<div class="card">
+			<div class="card-titulo">Actualizar precio de producto</div>
+			<h:form>
+				<div class="form-grid">
+					<div class="form-campo">
+						<label class="form-label">Producto</label>
+						<h:selectOneMenu id="productoActualizar"
+							value="#{productoBean.idProductoActualizar}"
+							styleClass="form-select" required="true"
+							requiredMessage="Debe seleccionar un producto">
+							<f:selectItem itemLabel="Seleccionar..." itemValue="0" />
+							<f:selectItems value="#{productoBean.listaProductos}" var="prod"
+								itemLabel="#{prod.nombre} ($#{prod.precioBase})"
+								itemValue="#{prod.idProducto}" />
+						</h:selectOneMenu>
+						<h:message for="productoActualizar" styleClass="mensaje-error" />
+					</div>
+					<div class="form-campo">
+						<label class="form-label">Nuevo precio (COP)</label>
+						<h:inputText id="nuevoPrecio" value="#{productoBean.nuevoPrecio}"
+							styleClass="form-input" required="true"
+							requiredMessage="El precio es obligatorio"
+							placeholder="Nuevo precio">
+							<f:validateDoubleRange minimum="0.01"
+								message="El precio debe ser mayor a cero" />
+						</h:inputText>
+						<h:message for="nuevoPrecio" styleClass="mensaje-error" />
+					</div>
+				</div>
+				<div class="btn-grupo">
+					<h:commandButton value="Actualizar precio"
+						action="#{productoBean.actualizarPrecio(productoBean.idProductoActualizar)}"
+						styleClass="btn-primario" />
+				</div>
+			</h:form>
+		</div>
 		<!-- Descuentos -->
 		<div class="card">
 			<div class="card-titulo">Registrar descuento</div>
@@ -222,15 +269,13 @@
 						</h:inputText>
 						<h:message for="valorDescuento" styleClass="mensaje-error" />
 					</div>
-
 					<div class="form-campo">
 						<label class="form-label">Fecha inicio</label>
 						<h:inputText id="fechaInicio"
-							value="#{productoBean.descuento.fechaInicio}"
+							value="#{productoBean.fechaInicioDescuento}"
 							styleClass="form-input" required="true"
 							requiredMessage="La fecha de inicio es obligatoria"
 							placeholder="AAAA-MM-DD">
-							<f:convertDateTime pattern="yyyy-MM-dd" />
 						</h:inputText>
 						<h:message for="fechaInicio" styleClass="mensaje-error" />
 					</div>
@@ -238,11 +283,9 @@
 					<div class="form-campo">
 						<label class="form-label">Fecha fin</label>
 						<h:inputText id="fechaFin"
-							value="#{productoBean.descuento.fechaFin}"
-							styleClass="form-input" required="true"
-							requiredMessage="La fecha de fin es obligatoria"
+							value="#{productoBean.fechaFinDescuento}" styleClass="form-input"
+							required="true" requiredMessage="La fecha de fin es obligatoria"
 							placeholder="AAAA-MM-DD">
-							<f:convertDateTime pattern="yyyy-MM-dd" />
 						</h:inputText>
 						<h:message for="fechaFin" styleClass="mensaje-error" />
 					</div>

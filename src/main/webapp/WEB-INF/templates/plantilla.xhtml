@@ -38,6 +38,8 @@
 			<!-- Menu Admin -->
 			<ui:fragment rendered="#{sessionBean.isAdmin()}">
 				<span class="sidebar-seccion">Gestión</span>
+				<h:link value="Clientes" outcome="/admin/clientes"
+					styleClass="sidebar-item" />
 				<h:link value="Empleados" outcome="/admin/empleados"
 					styleClass="sidebar-item" />
 				<h:link value="Proveedores" outcome="/admin/proveedores"
@@ -47,7 +49,11 @@
 				<h:link value="Inventario" outcome="/admin/inventario"
 					styleClass="sidebar-item" />
 				<span class="sidebar-seccion">Operaciones</span>
-				<h:link value="Ventas" outcome="/admin/ventas"
+				<h:link value="Ventas (historial)" outcome="/admin/ventas"
+					styleClass="sidebar-item" />
+				<h:link value="Nueva Venta" outcome="/vendedor/ventas"
+					styleClass="sidebar-item" />
+				<h:link value="Entrada Mercancía" outcome="/bodeguero/mercancia"
 					styleClass="sidebar-item" />
 				<span class="sidebar-seccion">Reportes</span>
 				<h:link value="Consultas" outcome="/admin/consultas"

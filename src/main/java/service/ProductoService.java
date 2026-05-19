@@ -21,7 +21,7 @@ public class ProductoService {
 	@Inject
 	private InventarioRepository inventarioRepo;
 
-	//  Producto
+	// Producto
 
 	// Registrar un nuevo producto
 	public void registrar(Producto producto) {
@@ -40,6 +40,36 @@ public class ProductoService {
 		producto.setEstado(EstadoProducto.disponible);
 
 		productoRepo.guardar(producto);
+	}
+
+	public void eliminar(int idProducto) {
+		Producto producto = productoRepo.buscarPorId(idProducto);
+
+		if (producto.getEstado() != EstadoProducto.descontinuado) {
+			throw new IllegalStateException("Solo se pueden eliminar productos descontinuados");
+		}
+
+		if (productoRepo.tieneVentas(idProducto)) {
+			throw new IllegalStateException("No se puede eliminar un producto que tiene ventas registradas");
+		}
+
+		productoRepo.eliminar(idProducto);
+	}
+
+	public void editar(Producto producto) {
+		Producto existente = productoRepo.buscarPorId(producto.getIdProducto());
+
+		// Verificar código único excluyendo el mismo producto
+		Producto porCodigo = productoRepo.buscarPorCodigo(producto.getCodigo());
+		if (porCodigo != null && porCodigo.getIdProducto() != producto.getIdProducto()) {
+			throw new IllegalArgumentException("Ya existe otro producto con ese código");
+		}
+
+		// Mantener el estado y precio actuales
+		producto.setEstado(existente.getEstado());
+		producto.setPrecioBase(existente.getPrecioBase());
+
+		productoRepo.actualizar(producto);
 	}
 
 	// Actualizar precio base — no afecta ventas ya completadas
@@ -96,6 +126,21 @@ public class ProductoService {
 		productoRepo.actualizar(producto);
 	}
 
+	public void marcarAgotado(int idProducto) {
+		Producto producto = productoRepo.buscarPorId(idProducto);
+
+		if (producto.getEstado() == EstadoProducto.descontinuado) {
+			throw new IllegalStateException("El producto está descontinuado y no puede modificarse");
+		}
+
+		if (producto.getEstado() == EstadoProducto.agotado) {
+			throw new IllegalStateException("El producto ya está marcado como agotado");
+		}
+
+		producto.setEstado(EstadoProducto.agotado);
+		productoRepo.actualizar(producto);
+	}
+
 	public Producto buscarPorId(int id) {
 		return productoRepo.buscarPorId(id);
 	}
@@ -108,7 +153,7 @@ public class ProductoService {
 		return productoRepo.listarDisponibles();
 	}
 
-	// Descuento 
+	// Descuento
 
 	// Registrar un descuento para un producto
 	public void registrarDescuento(Descuento descuento) {

@@ -47,17 +47,44 @@
 
 						<div class="form-grid">
 
-							<div class="form-campo form-grid-full">
-								<label class="form-label">ID Inventario (combinación)</label>
-								<h:inputText id="idInventarioDetalle"
-									value="#{abastecimientoBean.idInventarioDetalle}"
-									styleClass="form-input" required="true"
-									requiredMessage="El ID de inventario es obligatorio"
-									placeholder="ID de la combinación">
-									<f:validateLongRange minimum="1"
-										message="Debe ingresar un ID válido" />
-								</h:inputText>
-								<h:message for="idInventarioDetalle" styleClass="mensaje-error" />
+							<div class="form-campo">
+								<label class="form-label">Producto</label>
+								<h:selectOneMenu id="productoDetalle"
+									value="#{abastecimientoBean.idProductoDetalle}"
+									styleClass="form-select" required="true"
+									requiredMessage="Debe seleccionar un producto">
+									<f:selectItem itemLabel="Seleccionar..." itemValue="0" />
+									<f:selectItems value="#{abastecimientoBean.listaProductos}"
+										var="prod" itemLabel="#{prod.nombre}"
+										itemValue="#{prod.idProducto}" />
+								</h:selectOneMenu>
+								<h:message for="productoDetalle" styleClass="mensaje-error" />
+							</div>
+
+							<div class="form-campo">
+								<label class="form-label">Talla</label>
+								<h:selectOneMenu id="tallaDetalle"
+									value="#{abastecimientoBean.idTallaDetalle}"
+									styleClass="form-select" required="true"
+									requiredMessage="Debe seleccionar una talla">
+									<f:selectItem itemLabel="Seleccionar..." itemValue="0" />
+									<f:selectItems value="#{abastecimientoBean.listaTallas}"
+										var="t" itemLabel="#{t.nombre}" itemValue="#{t.idTalla}" />
+								</h:selectOneMenu>
+								<h:message for="tallaDetalle" styleClass="mensaje-error" />
+							</div>
+
+							<div class="form-campo">
+								<label class="form-label">Color</label>
+								<h:selectOneMenu id="colorDetalle"
+									value="#{abastecimientoBean.idColorDetalle}"
+									styleClass="form-select" required="true"
+									requiredMessage="Debe seleccionar un color">
+									<f:selectItem itemLabel="Seleccionar..." itemValue="0" />
+									<f:selectItems value="#{abastecimientoBean.listaColores}"
+										var="c" itemLabel="#{c.nombre}" itemValue="#{c.idColor}" />
+								</h:selectOneMenu>
+								<h:message for="colorDetalle" styleClass="mensaje-error" />
 							</div>
 
 							<div class="form-campo">

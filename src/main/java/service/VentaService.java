@@ -12,261 +12,254 @@ import java.util.List;
 @ApplicationScoped
 public class VentaService {
 
-    @Inject
-    private VentaRepository ventaRepo;
+	@Inject
+	private VentaRepository ventaRepo;
 
-    @Inject
-    private InventarioService inventarioService;
+	@Inject
+	private InventarioService inventarioService;
 
-    @Inject
-    private ProductoService productoService;
+	@Inject
+	private ProductoService productoService;
 
-    // ── Venta ──────────────────────────────────────────────────────────────
+	// ── Venta ──────────────────────────────────────────────────────────────
 
-    // Crear una nueva venta en estado pendiente
-    public Venta crearVenta(Empleado empleado, Cliente cliente) {
+	// Crear una nueva venta en estado pendiente
+	public Venta crearVenta(Empleado empleado, Cliente cliente) {
 
-        Venta venta = new Venta();
-        venta.setEmpleado(empleado);
-        venta.setCliente(cliente);
-        venta.setFechaHora(LocalDateTime.now());
-        venta.setEstado(EstadoVenta.pendiente);
-        venta.setTotal(BigDecimal.ZERO);
+		Venta venta = new Venta();
+		venta.setEmpleado(empleado);
+		venta.setCliente(cliente);
+		venta.setFechaHora(LocalDateTime.now());
+		venta.setEstado(EstadoVenta.pendiente);
+		venta.setTotal(BigDecimal.ZERO);
 
-        ventaRepo.guardar(venta);
-        return venta;
-    }
+		ventaRepo.guardar(venta);
+		return venta;
+	}
 
-    // Agregar detalle de venta de forma sencilla
-    public void agregarDetalle(int idVenta, Inventario inventario, int cantidad) {
+	// Agregar detalle de venta de forma sencilla
+	public void agregarDetalle(int idVenta, Inventario inventario, int cantidad) {
 
-        Venta venta = ventaRepo.buscarPorId(idVenta);
+		Venta venta = ventaRepo.buscarPorId(idVenta);
 
-        // Solo ventas pendientes
-        if (venta.getEstado() != EstadoVenta.pendiente) {
-            throw new IllegalStateException(
-                "Solo se pueden agregar productos a ventas pendientes");
-        }
+		// Solo ventas pendientes
+		if (venta.getEstado() != EstadoVenta.pendiente) {
+			throw new IllegalStateException("Solo se pueden agregar productos a ventas pendientes");
+		}
 
-        // Reservar stock
-        inventarioService.reservarStock(inventario.getIdInventario(), cantidad);
+		Producto.EstadoProducto estadoProducto = inventario.getProducto().getEstado();
+		if (estadoProducto == Producto.EstadoProducto.descontinuado) {
+			throw new IllegalStateException("No se puede vender un producto descontinuado");
+		}
+		if (estadoProducto == Producto.EstadoProducto.agotado) {
+			throw new IllegalStateException("No se puede vender un producto agotado");
+		}
 
-        // Obtener precio final con descuento si existe
-        BigDecimal precioFinal = productoService
-            .calcularPrecioFinal(inventario.getProducto().getIdProducto());
+		// Reservar stock
+		inventarioService.reservarStock(inventario.getIdInventario(), cantidad);
 
-        // Obtener descuento aplicado si existe
-        Descuento descuento = null;
-        // El precio base del producto
-        BigDecimal precioBase = inventario.getProducto().getPrecioBase();
-        // Si el precio final es menor al base habia descuento
-        BigDecimal descuentoAplicado = null;
-        if (precioFinal.compareTo(precioBase) < 0) {
-            descuentoAplicado = precioBase.subtract(precioFinal);
-        }
+		// Obtener precio final con descuento si existe
+		BigDecimal precioFinal = productoService.calcularPrecioFinal(inventario.getProducto().getIdProducto());
 
-        // Crear el detalle
-        DetalleVenta detalle = new DetalleVenta();
-        detalle.setVenta(venta);
-        detalle.setInventario(inventario);
-        detalle.setCantidad(cantidad);
-        detalle.setPrecioUnitario(precioFinal);
-        detalle.setDescuentoAplicado(descuentoAplicado);
+		// Obtener descuento aplicado si existe
+		Descuento descuento = null;
+		// El precio base del producto
+		BigDecimal precioBase = inventario.getProducto().getPrecioBase();
+		// Si el precio final es menor al base habia descuento
+		BigDecimal descuentoAplicado = null;
+		if (precioFinal.compareTo(precioBase) < 0) {
+			descuentoAplicado = precioBase.subtract(precioFinal);
+		}
 
-        ventaRepo.guardarDetalle(detalle);
+		// Crear el detalle
+		DetalleVenta detalle = new DetalleVenta();
+		detalle.setVenta(venta);
+		detalle.setInventario(inventario);
+		detalle.setCantidad(cantidad);
+		detalle.setPrecioUnitario(precioFinal);
+		detalle.setDescuentoAplicado(descuentoAplicado);
 
-        // Actualizar total de la venta
-        recalcularTotal(idVenta);
-    }
+		ventaRepo.guardarDetalle(detalle);
 
-    // Quitar un producto de una venta pendiente
-    public void quitarDetalle(int idVenta, int idDetalle) {
+		// Actualizar total de la venta
+		recalcularTotal(idVenta);
+	}
 
-        Venta venta = ventaRepo.buscarPorId(idVenta);
+	// Quitar un producto de una venta pendiente
+	public void quitarDetalle(int idVenta, int idDetalle) {
 
-        // Solo ventas pendientes
-        if (venta.getEstado() != EstadoVenta.pendiente) {
-            throw new IllegalStateException(
-                "Solo se pueden quitar productos de ventas pendientes");
-        }
+		Venta venta = ventaRepo.buscarPorId(idVenta);
 
-        // Buscar el detalle en la lista de la venta
-        List<DetalleVenta> detalles = ventaRepo.listarDetallesPorVenta(idVenta);
-        DetalleVenta detalle = detalles.stream()
-            .filter(d -> d.getIdDetalleVenta() == idDetalle)
-            .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("Detalle no encontrado"));
+		// Solo ventas pendientes
+		if (venta.getEstado() != EstadoVenta.pendiente) {
+			throw new IllegalStateException("Solo se pueden quitar productos de ventas pendientes");
+		}
 
-        // Liberar el stock reservado
-        inventarioService.liberarStock(
-            detalle.getInventario().getIdInventario(),
-            detalle.getCantidad());
+		// Buscar el detalle en la lista de la venta
+		List<DetalleVenta> detalles = ventaRepo.listarDetallesPorVenta(idVenta);
+		DetalleVenta detalle = detalles.stream().filter(d -> d.getIdDetalleVenta() == idDetalle).findFirst()
+				.orElseThrow(() -> new IllegalArgumentException("Detalle no encontrado"));
 
-        // Eliminar el detalle
-        ventaRepo.eliminarDetalle(detalle);
+		// Liberar el stock reservado
+		inventarioService.liberarStock(detalle.getInventario().getIdInventario(), detalle.getCantidad());
 
-        // Actualizar total
-        recalcularTotal(idVenta);
-    }
+		// Eliminar el detalle
+		ventaRepo.eliminarDetalle(detalle);
 
-    // Completar una venta — valida pagos y descuenta stock
-    public void completarVenta(int idVenta) {
+		// Actualizar total
+		recalcularTotal(idVenta);
+	}
 
-        Venta venta = ventaRepo.buscarPorId(idVenta);
+	// Completar una venta — valida pagos y descuenta stock
+	public void completarVenta(int idVenta) {
 
-        // Verificar que este pendiente
-        if (venta.getEstado() != EstadoVenta.pendiente) {
-            throw new IllegalStateException("Solo se pueden completar ventas pendientes");
-        }
+		Venta venta = ventaRepo.buscarPorId(idVenta);
 
-        // Verificar que tenga al menos un producto
-        long totalDetalles = ventaRepo.contarDetallesPorVenta(idVenta);
-        if (totalDetalles == 0) {
-            throw new IllegalStateException(
-                "La venta debe tener al menos un producto");
-        }
+		// Verificar que este pendiente
+		if (venta.getEstado() != EstadoVenta.pendiente) {
+			throw new IllegalStateException("Solo se pueden completar ventas pendientes");
+		}
 
-        // Verificar que los pagos sumen el total
-        if (!pagosCubrenTotal(idVenta)) {
-            throw new IllegalStateException(
-                "La suma de los pagos no cubre el total de la venta");
-        }
+		// Verificar que tenga al menos un producto
+		long totalDetalles = ventaRepo.contarDetallesPorVenta(idVenta);
+		if (totalDetalles == 0) {
+			throw new IllegalStateException("La venta debe tener al menos un producto");
+		}
 
-        // Descontar stock definitivamente por cada detalle
-        List<DetalleVenta> detalles = ventaRepo.listarDetallesPorVenta(idVenta);
-        for (DetalleVenta detalle : detalles) {
-            inventarioService.descontarStock(
-                detalle.getInventario().getIdInventario(),
-                detalle.getCantidad());
-        }
+		// Verificar que los pagos sumen el total
+		if (!pagosCubrenTotal(idVenta)) {
+			throw new IllegalStateException("La suma de los pagos no cubre el total de la venta");
+		}
 
-        // Cambiar estado a completada
-        venta.setEstado(EstadoVenta.completada);
-        ventaRepo.actualizar(venta);
-    }
+		// Descontar stock definitivamente por cada detalle
+		List<DetalleVenta> detalles = ventaRepo.listarDetallesPorVenta(idVenta);
+		for (DetalleVenta detalle : detalles) {
+			inventarioService.descontarStock(detalle.getInventario().getIdInventario(), detalle.getCantidad());
+		}
 
-    // Anular una venta pendiente
-    public void anularVenta(int idVenta, String motivo, Empleado empleado) {
+		// Cambiar estado a completada
+		venta.setEstado(EstadoVenta.completada);
+		ventaRepo.actualizar(venta);
+	}
 
-        Venta venta = ventaRepo.buscarPorId(idVenta);
+	// Anular una venta pendiente
+	public void anularVenta(int idVenta, String motivo, Empleado empleado) {
 
-        // Solo se pueden anular ventas pendientes
-        if (venta.getEstado() != EstadoVenta.pendiente) {
-            throw new IllegalStateException("Solo se pueden anular ventas pendientes");
-        }
+		Venta venta = ventaRepo.buscarPorId(idVenta);
 
-        // Liberar el stock reservado por cada detalle
-        List<DetalleVenta> detalles = ventaRepo.listarDetallesPorVenta(idVenta);
-        for (DetalleVenta detalle : detalles) {
-            inventarioService.liberarStock(
-                detalle.getInventario().getIdInventario(),
-                detalle.getCantidad());
-        }
+		// Solo se pueden anular ventas pendientes
+		if (venta.getEstado() != EstadoVenta.pendiente) {
+			throw new IllegalStateException("Solo se pueden anular ventas pendientes");
+		}
 
-        // Eliminar pagos parciales si los habia
-        ventaRepo.eliminarPagosPorVenta(idVenta);
+		// Liberar el stock reservado por cada detalle
+		List<DetalleVenta> detalles = ventaRepo.listarDetallesPorVenta(idVenta);
+		for (DetalleVenta detalle : detalles) {
+			inventarioService.liberarStock(detalle.getInventario().getIdInventario(), detalle.getCantidad());
+		}
 
-        // Registrar la anulacion
-        AnulacionVenta anulacion = new AnulacionVenta();
-        anulacion.setVenta(venta);
-        anulacion.setEmpleado(empleado);
-        anulacion.setMotivo(motivo);
-        anulacion.setFechaHora(LocalDateTime.now());
-        ventaRepo.guardarAnulacion(anulacion);
+		// Eliminar pagos parciales si los habia
+		ventaRepo.eliminarPagosPorVenta(idVenta);
 
-        // Cambiar estado a anulada
-        venta.setEstado(EstadoVenta.anulada);
-        ventaRepo.actualizar(venta);
-    }
+		// Registrar la anulacion
+		AnulacionVenta anulacion = new AnulacionVenta();
+		anulacion.setVenta(venta);
+		anulacion.setEmpleado(empleado);
+		anulacion.setMotivo(motivo);
+		anulacion.setFechaHora(LocalDateTime.now());
+		ventaRepo.guardarAnulacion(anulacion);
 
-    // Recalcular el total sumando los subtotales de cada detalle
-    private void recalcularTotal(int idVenta) {
+		// Cambiar estado a anulada
+		venta.setEstado(EstadoVenta.anulada);
+		ventaRepo.actualizar(venta);
+	}
 
-        List<DetalleVenta> detalles = ventaRepo.listarDetallesPorVenta(idVenta);
+	// Recalcular el total sumando los subtotales de cada detalle
+	private void recalcularTotal(int idVenta) {
 
-        BigDecimal total = BigDecimal.ZERO;
-        for (DetalleVenta detalle : detalles) {
-            total = total.add(detalle.getSubtotal());
-        }
+		List<DetalleVenta> detalles = ventaRepo.listarDetallesPorVenta(idVenta);
 
-        Venta venta = ventaRepo.buscarPorId(idVenta);
-        venta.setTotal(total);
-        ventaRepo.actualizar(venta);
-    }
+		BigDecimal total = BigDecimal.ZERO;
+		for (DetalleVenta detalle : detalles) {
+			total = total.add(detalle.getSubtotal());
+		}
 
-    // Verificar que la suma de pagos cubra el total de la venta
-    private boolean pagosCubrenTotal(int idVenta) {
+		Venta venta = ventaRepo.buscarPorId(idVenta);
+		venta.setTotal(total);
+		ventaRepo.actualizar(venta);
+	}
 
-        Venta venta = ventaRepo.buscarPorId(idVenta);
-        List<Pago> pagos = ventaRepo.listarPagosPorVenta(idVenta);
+	// Verificar que la suma de pagos cubra el total de la venta
+	private boolean pagosCubrenTotal(int idVenta) {
 
-        BigDecimal sumaPagos = BigDecimal.ZERO;
-        for (Pago pago : pagos) {
-            sumaPagos = sumaPagos.add(pago.getValor());
-        }
+		Venta venta = ventaRepo.buscarPorId(idVenta);
+		List<Pago> pagos = ventaRepo.listarPagosPorVenta(idVenta);
 
-        return sumaPagos.compareTo(venta.getTotal()) >= 0;
-    }
+		BigDecimal sumaPagos = BigDecimal.ZERO;
+		for (Pago pago : pagos) {
+			sumaPagos = sumaPagos.add(pago.getValor());
+		}
 
-    // ── Pagos ──────────────────────────────────────────────────────────────
+		return sumaPagos.compareTo(venta.getTotal()) >= 0;
+	}
 
-    // Registrar un pago para una venta pendiente
-    public void registrarPago(int idVenta, Pago pago) {
+	// ── Pagos ──────────────────────────────────────────────────────────────
 
-        Venta venta = ventaRepo.buscarPorId(idVenta);
+	// Registrar un pago para una venta pendiente
+	public void registrarPago(int idVenta, Pago pago) {
 
-        // Solo ventas pendientes aceptan pagos
-        if (venta.getEstado() != EstadoVenta.pendiente) {
-            throw new IllegalStateException(
-                "Solo se pueden registrar pagos en ventas pendientes");
-        }
+		Venta venta = ventaRepo.buscarPorId(idVenta);
 
-        // Si es tarjeta o transferencia debe tener referencia
-        if (pago.getMetodo() != Pago.MetodoPago.efectivo
-                && (pago.getReferencia() == null || pago.getReferencia().isBlank())) {
-            throw new IllegalArgumentException(
-                "Tarjeta y transferencia requieren número de referencia");
-        }
+		// Solo ventas pendientes aceptan pagos
+		if (venta.getEstado() != EstadoVenta.pendiente) {
+			throw new IllegalStateException("Solo se pueden registrar pagos en ventas pendientes");
+		}
 
-        // Si es efectivo calcular cambio si aplica
-        if (pago.getMetodo() == Pago.MetodoPago.efectivo) {
-            BigDecimal diferencia = pago.getValor().subtract(venta.getTotal());
-            if (diferencia.compareTo(BigDecimal.ZERO) > 0) {
-                pago.setCambio(diferencia);
-            }
-        }
+		// Si es tarjeta o transferencia debe tener referencia
+		if (pago.getMetodo() != Pago.MetodoPago.efectivo
+				&& (pago.getReferencia() == null || pago.getReferencia().isBlank())) {
+			throw new IllegalArgumentException("Tarjeta y transferencia requieren número de referencia");
+		}
 
-        pago.setVenta(venta);
-        ventaRepo.guardarPago(pago);
-    }
+		// Si es efectivo calcular cambio si aplica
+		if (pago.getMetodo() == Pago.MetodoPago.efectivo) {
+			BigDecimal diferencia = pago.getValor().subtract(venta.getTotal());
+			if (diferencia.compareTo(BigDecimal.ZERO) > 0) {
+				pago.setCambio(diferencia);
+			}
+		}
 
-    // ── Consultas ──────────────────────────────────────────────────────────
+		pago.setVenta(venta);
+		ventaRepo.guardarPago(pago);
+	}
 
-    public Venta buscarPorId(int id) {
-        return ventaRepo.buscarPorId(id);
-    }
+	// ── Consultas ──────────────────────────────────────────────────────────
 
-    public List<Venta> listarTodas() {
-        return ventaRepo.listarTodas();
-    }
+	public Venta buscarPorId(int id) {
+		return ventaRepo.buscarPorId(id);
+	}
 
-    public List<Venta> listarPorEmpleado(int idEmpleado) {
-        return ventaRepo.listarPorEmpleado(idEmpleado);
-    }
+	public List<Venta> listarTodas() {
+		return ventaRepo.listarTodas();
+	}
 
-    public List<DetalleVenta> listarDetalles(int idVenta) {
-        return ventaRepo.listarDetallesPorVenta(idVenta);
-    }
+	public List<Venta> listarPorEmpleado(int idEmpleado) {
+		return ventaRepo.listarPorEmpleado(idEmpleado);
+	}
 
-    public List<Pago> listarPagos(int idVenta) {
-        return ventaRepo.listarPagosPorVenta(idVenta);
-    }
+	public List<DetalleVenta> listarDetalles(int idVenta) {
+		return ventaRepo.listarDetallesPorVenta(idVenta);
+	}
 
-    public List<Venta> listarPendientesVencidas() {
-        return ventaRepo.listarPendientesVencidas();
-    }
+	public List<Pago> listarPagos(int idVenta) {
+		return ventaRepo.listarPagosPorVenta(idVenta);
+	}
 
-    public List<AnulacionVenta> listarAnulaciones() {
-        return ventaRepo.listarTodasAnulaciones();
-    }
+	public List<Venta> listarPendientesVencidas() {
+		return ventaRepo.listarPendientesVencidas();
+	}
+
+	public List<AnulacionVenta> listarAnulaciones() {
+		return ventaRepo.listarTodasAnulaciones();
+	}
 }

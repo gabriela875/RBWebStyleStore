@@ -39,6 +39,23 @@ public class ProductoRepository {
 		}
 	}
 
+	public void eliminar(int idProducto) {
+		EntityManager em = emf.createEntityManager();
+		try {
+			em.getTransaction().begin();
+			Producto p = em.find(Producto.class, idProducto);
+			if (p != null) {
+				em.remove(p);
+			}
+			em.getTransaction().commit();
+		} catch (Exception e) {
+			em.getTransaction().rollback();
+			throw e;
+		} finally {
+			em.close();
+		}
+	}
+
 	public Producto buscarPorId(int id) {
 		EntityManager em = emf.createEntityManager();
 		try {
@@ -135,4 +152,5 @@ public class ProductoRepository {
 			em.close();
 		}
 	}
+
 }

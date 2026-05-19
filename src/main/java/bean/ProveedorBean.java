@@ -34,17 +34,20 @@ public class ProveedorBean implements Serializable {
 			mensajeError = "No tiene permisos para registrar proveedores";
 			return null;
 		}
-		if (proveedor.getIdProveedor() == 0) {
-			// es nuevo
-			proveedorService.registrar(proveedor);
-			mensajeExito = "Proveedor registrado correctamente";
-		} else {
-			// es edición
-			proveedorService.editar(proveedor);
-			mensajeExito = "Proveedor actualizado correctamente";
+
+		try {
+			if (proveedor.getIdProveedor() == 0) {
+				proveedorService.registrar(proveedor);
+				mensajeExito = "Proveedor registrado correctamente";
+			} else {
+				proveedorService.editar(proveedor);
+				mensajeExito = "Proveedor actualizado correctamente";
+			}
+			proveedor = new Proveedor();
+			listaProveedores = null;
+		} catch (Exception e) {
+			mensajeError = e.getMessage();
 		}
-		proveedor = new Proveedor();
-		listaProveedores = null;
 		return null;
 
 	}
@@ -71,6 +74,25 @@ public class ProveedorBean implements Serializable {
 			listaProveedores = proveedorService.listarTodos();
 		}
 		return listaProveedores;
+	}
+
+	public String darDeBaja(int idProveedor) {
+		mensajeExito = null;
+		mensajeError = null;
+
+		if (!sessionBean.isAdmin()) {
+			mensajeError = "Solo el Administrador puede dar de baja proveedores";
+			return null;
+		}
+
+		try {
+			proveedorService.eliminar(idProveedor);
+			mensajeExito = "Proveedor eliminado correctamente";
+			listaProveedores = null;
+		} catch (Exception e) {
+			mensajeError = e.getMessage();
+		}
+		return null;
 	}
 
 	public Proveedor getProveedor() {

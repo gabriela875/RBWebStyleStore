@@ -84,7 +84,47 @@
 			</div>
 
 		</div>
-
+		<!-- Gestión de estado de productos — regla 69 -->
+		<div class="card">
+			<div class="card-titulo">Estado de productos</div>
+			<div class="tabla-contenedor">
+				<table class="tabla">
+					<thead>
+						<tr>
+							<th>Código</th>
+							<th>Nombre</th>
+							<th>Estado</th>
+							<th>Acciones</th>
+						</tr>
+					</thead>
+					<tbody>
+						<ui:repeat value="#{productoBean.listaProductos}" var="prod">
+							<tr>
+								<td>#{prod.codigo}</td>
+								<td>#{prod.nombre}</td>
+								<td>#{prod.estado}</td>
+								<td>
+									<div class="acciones">
+										<h:form>
+											<h:commandButton value="Marcar agotado"
+												rendered="#{prod.estado.name() == 'disponible'}"
+												action="#{productoBean.marcarAgotado(prod.idProducto)}"
+												styleClass="btn-tabla" />
+										</h:form>
+										<h:form>
+											<h:commandButton value="Descontinuar"
+												rendered="#{prod.estado.name() != 'descontinuado'}"
+												action="#{productoBean.descontinuar(prod.idProducto)}"
+												styleClass="btn-tabla-peligro" />
+										</h:form>
+									</div>
+								</td>
+							</tr>
+						</ui:repeat>
+					</tbody>
+				</table>
+			</div>
+		</div>
 	</ui:define>
 </ui:composition>
 </html>
