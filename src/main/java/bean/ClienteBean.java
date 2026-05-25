@@ -3,14 +3,17 @@ package bean;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
 import model.Cliente;
+import model.TipoDocumento;
 import service.ClienteService;
+import util.JpaUtil;
 import java.io.Serializable;
 import java.util.List;
 
 @Named
-@ViewScoped 
-public class ClienteBean implements Serializable { 
+@ViewScoped
+public class ClienteBean implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -22,10 +25,11 @@ public class ClienteBean implements Serializable {
 
 	private Cliente cliente = new Cliente();
 	private List<Cliente> listaClientes;
+	private List<TipoDocumento> listaTiposDocumento;
+	private int idTipoDocSeleccionado;
 	private String mensajeExito;
 	private String mensajeError;
 
-	// Registrar un cliente dentro del flujo de una venta
 	public void registrar() {
 		mensajeExito = null;
 		mensajeError = null;
@@ -35,18 +39,31 @@ public class ClienteBean implements Serializable {
 			return;
 		}
 
+		// Buscar tipo de documento seleccionado
+		TipoDocumento tipoDoc = null;
+		for (TipoDocumento td : getListaTiposDocumento()) {
+			if (td.getIdTipoDoc() == idTipoDocSeleccionado) {
+				tipoDoc = td;
+				break;
+			}
+		}
+		if (tipoDoc == null) {
+			mensajeError = "Debe seleccionar el tipo de documento";
+			return;
+		}
+		cliente.setTipoDocumento(tipoDoc);
+
 		try {
 			clienteService.registrar(cliente);
 			mensajeExito = "Cliente registrado correctamente";
 			cliente = new Cliente();
+			idTipoDocSeleccionado = 0;
 			listaClientes = null;
 		} catch (Exception e) {
-			// El ClienteService lanza excepción con mensaje claro si el documento ya existe
 			mensajeError = e.getMessage();
 		}
 	}
 
-	// Editar cliente — solo Admin
 	public void editar() {
 		mensajeExito = null;
 		mensajeError = null;
@@ -54,6 +71,17 @@ public class ClienteBean implements Serializable {
 		if (!sessionBean.isAdmin()) {
 			mensajeError = "Solo el Administrador puede editar clientes";
 			return;
+		}
+
+		TipoDocumento tipoDoc = null;
+		for (TipoDocumento td : getListaTiposDocumento()) {
+			if (td.getIdTipoDoc() == idTipoDocSeleccionado) {
+				tipoDoc = td;
+				break;
+			}
+		}
+		if (tipoDoc != null) {
+			cliente.setTipoDocumento(tipoDoc);
 		}
 
 		try {
@@ -65,41 +93,48 @@ public class ClienteBean implements Serializable {
 		}
 	}
 
-	// Buscar cliente por documento para vincularlo a una venta
 	public void buscarPorDocumento(String numDocumento) {
 		mensajeError = null;
 		Cliente encontrado = clienteService.buscarPorDocumento(numDocumento);
 		if (encontrado != null) {
 			cliente = encontrado;
+			idTipoDocSeleccionado = cliente.getTipoDocumento().getIdTipoDoc();
 		} else {
 			mensajeError = "No se encontró un cliente con ese documento";
 		}
 	}
 
-	// Cargar un cliente para editar
 	public void cargarCliente(int idCliente) {
 		mensajeExito = null;
 		mensajeError = null;
 		cliente = clienteService.buscarPorId(idCliente);
+		idTipoDocSeleccionado = cliente.getTipoDocumento().getIdTipoDoc();
 	}
 
-	// Limpiar formulario
 	public void nuevo() {
 		mensajeExito = null;
 		mensajeError = null;
 		cliente = new Cliente();
+		idTipoDocSeleccionado = 0;
 	}
 
-	// Listar todos los clientes
 	public List<Cliente> getListaClientes() {
-		if (listaClientes == null) {
+		if (listaClientes == null)
 			listaClientes = clienteService.listarTodos();
-		}
 		return listaClientes;
 	}
 
-	public Cliente.TipoDocumento[] getTiposDocumento() {
-		return Cliente.TipoDocumento.values();
+	public List<TipoDocumento> getListaTiposDocumento() {
+		if (listaTiposDocumento == null) {
+			EntityManager em = JpaUtil.getEntityManagerFactory().createEntityManager();
+			try {
+				listaTiposDocumento = em.createQuery("SELECT t FROM TipoDocumento t", TipoDocumento.class)
+						.getResultList();
+			} finally {
+				em.close();
+			}
+		}
+		return listaTiposDocumento;
 	}
 
 	public Cliente getCliente() {
@@ -108,6 +143,14 @@ public class ClienteBean implements Serializable {
 
 	public void setCliente(Cliente cliente) {
 		this.cliente = cliente;
+	}
+
+	public int getIdTipoDocSeleccionado() {
+		return idTipoDocSeleccionado;
+	}
+
+	public void setIdTipoDocSeleccionado(int id) {
+		this.idTipoDocSeleccionado = id;
 	}
 
 	public String getMensajeExito() {

@@ -97,8 +97,8 @@ public class EmpleadoRepository {
 		try {
 			Long count = em
 					.createQuery("SELECT COUNT(v) FROM Venta v WHERE v.empleado.idEmpleado = :id "
-							+ "AND v.estado = model.Venta$EstadoVenta.pendiente", Long.class)
-					.setParameter("id", idEmpleado).getSingleResult();
+							+ "AND v.estadoVenta.nombre = :estado", Long.class)
+					.setParameter("id", idEmpleado).setParameter("estado", "Pendiente").getSingleResult();
 			return count > 0;
 		} finally {
 			em.close();

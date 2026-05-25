@@ -22,10 +22,10 @@ public class Venta {
 	@Column(name = "Total", nullable = false, precision = 12, scale = 2)
 	private BigDecimal total;
 
+	@ManyToOne
+	@JoinColumn(name = "id_Estado_Venta", nullable = false)
 	@NotNull(message = "El estado es obligatorio")
-	@Enumerated(EnumType.STRING)
-	@Column(name = "Estado", nullable = false)
-	private EstadoVenta estado;
+	private EstadoVenta estadoVenta;
 
 	@ManyToOne
 	@JoinColumn(name = "id_Cliente", nullable = false)
@@ -37,10 +37,6 @@ public class Venta {
 	@NotNull(message = "El empleado es obligatorio")
 	private Empleado empleado;
 
-	public enum EstadoVenta {
-		pendiente, completada, anulada
-	}
-
 	public Venta() {
 	}
 
@@ -48,16 +44,16 @@ public class Venta {
 		return idVenta;
 	}
 
-	public void setIdVenta(int idVenta) {
-		this.idVenta = idVenta;
+	public void setIdVenta(int id) {
+		this.idVenta = id;
 	}
 
 	public LocalDateTime getFechaHora() {
 		return fechaHora;
 	}
 
-	public void setFechaHora(LocalDateTime fechaHora) {
-		this.fechaHora = fechaHora;
+	public void setFechaHora(LocalDateTime fecha) {
+		this.fechaHora = fecha;
 	}
 
 	public BigDecimal getTotal() {
@@ -68,12 +64,12 @@ public class Venta {
 		this.total = total;
 	}
 
-	public EstadoVenta getEstado() {
-		return estado;
+	public EstadoVenta getEstadoVenta() {
+		return estadoVenta;
 	}
 
-	public void setEstado(EstadoVenta estado) {
-		this.estado = estado;
+	public void setEstadoVenta(EstadoVenta estado) {
+		this.estadoVenta = estado;
 	}
 
 	public Cliente getCliente() {

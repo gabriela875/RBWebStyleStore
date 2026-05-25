@@ -78,11 +78,12 @@
 									<td>#{v.cliente.nombre} #{v.cliente.apellido}</td>
 									<td>$#{v.total}</td>
 									<td><h:panelGroup
-											rendered="#{v.estado.name() == 'pendiente'}">
+											rendered="#{v.estadoVenta.nombre == 'Pendiente'}">
 											<span class="badge badge-pendiente">Pendiente</span>
-										</h:panelGroup> <h:panelGroup rendered="#{v.estado.name() == 'completada'}">
+										</h:panelGroup> <h:panelGroup
+											rendered="#{v.estadoVenta.nombre == 'Completada'}">
 											<span class="badge badge-completada">Completada</span>
-										</h:panelGroup> <h:panelGroup rendered="#{v.estado.name() == 'anulada'}">
+										</h:panelGroup> <h:panelGroup rendered="#{v.estadoVenta.nombre == 'Anulada'}">
 											<span class="badge badge-anulada">Anulada</span>
 										</h:panelGroup></td>
 								</tr>
@@ -143,7 +144,7 @@
 						<tbody>
 							<ui:repeat value="#{consultaBean.listaPagos}" var="p">
 								<tr>
-									<td>#{p.metodo}</td>
+									<td>#{p.metodoPago.nombre}</td>
 									<td>$#{p.valor}</td>
 									<td>#{p.referencia != null ? p.referencia : '-'}</td>
 									<td>#{p.cambio != null ? p.cambio : '-'}</td>
@@ -173,7 +174,7 @@
 							<ui:repeat value="#{consultaBean.listaClientes}" var="cli">
 								<tr>
 									<td>#{cli.nombre} #{cli.apellido}</td>
-									<td>#{cli.tipoDocumento}</td>
+									<td>#{cli.tipoDocumento.nombre}</td>
 									<td>#{cli.numDocumento}</td>
 									<td>#{cli.correo != null ? cli.correo : '-'}</td>
 								</tr>
@@ -206,7 +207,7 @@
 									<td>#{prod.nombre}</td>
 									<td>#{prod.categoria.nombre}</td>
 									<td>$#{prod.precioBase}</td>
-									<td>#{prod.estado}</td>
+									<td>#{prod.estadoProducto.nombre}</td>
 								</tr>
 							</ui:repeat>
 						</tbody>

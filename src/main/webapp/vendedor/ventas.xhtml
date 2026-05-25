@@ -1,374 +1,428 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="jakarta.faces.html"
-	xmlns:ui="jakarta.faces.facelets" xmlns:f="jakarta.faces.core">
+    xmlns:ui="jakarta.faces.facelets" xmlns:f="jakarta.faces.core">
 
 <ui:composition template="/WEB-INF/templates/plantilla.xhtml">
-	<ui:define name="contenido">
+    <ui:define name="contenido">
 
-		<h:outputStylesheet library="css" name="vistas.css" />
+        <h:outputStylesheet library="css" name="vistas.css" />
 
-		<h1 class="pagina-titulo">Nueva venta</h1>
-		<p class="pagina-subtitulo">Registro de venta presencial paso a
-			paso</p>
+        <h1 class="pagina-titulo">Nueva venta</h1>
+        <p class="pagina-subtitulo">Registro de venta presencial paso a paso</p>
 
-		<h:panelGroup rendered="#{not empty ventaBean.mensajeExito}">
-			<div class="mensaje-exito">#{ventaBean.mensajeExito}</div>
-		</h:panelGroup>
-		<h:panelGroup rendered="#{not empty ventaBean.mensajeError}">
-			<div class="mensaje-error">#{ventaBean.mensajeError}</div>
-		</h:panelGroup>
+        <h:panelGroup rendered="#{not empty ventaBean.mensajeExito}">
+            <div class="mensaje-exito">#{ventaBean.mensajeExito}</div>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{not empty ventaBean.mensajeError}">
+            <div class="mensaje-error">#{ventaBean.mensajeError}</div>
+        </h:panelGroup>
 
-		<!-- PASO 1: Sin venta activa -->
-		<h:panelGroup rendered="#{ventaBean.ventaActiva == null}">
+        <!-- PASO 1: Sin venta activa -->
+        <h:panelGroup rendered="#{ventaBean.ventaActiva == null}">
 
-			<div class="pasos">
-				<span class="paso activo">1. Cliente</span> <span class="paso">2.
-					Productos</span> <span class="paso">3. Pago</span>
-			</div>
+            <div class="pasos">
+                <span class="paso activo">1. Cliente</span>
+                <span class="paso">2. Productos</span>
+                <span class="paso">3. Pago</span>
+            </div>
 
-			<div class="panel-grid">
+            <div class="panel-grid">
 
-				<!-- Buscar cliente existente -->
-				<div class="card">
-					<div class="card-titulo">Buscar cliente existente</div>
-					<h:form>
-						<div class="form-campo">
-							<label class="form-label">Número de documento</label>
-							<h:inputText id="documentoBusqueda"
-								value="#{ventaBean.documentoBusqueda}" styleClass="form-input"
-								required="true" requiredMessage="Ingrese el número de documento"
-								placeholder="Ingresa el documento">
-								<f:validateLength minimum="5" maximum="20" />
-							</h:inputText>
-							<h:message for="documentoBusqueda" styleClass="mensaje-error" />
-						</div>
-						<div class="btn-grupo">
-							<h:commandButton value="Buscar"
-								action="#{ventaBean.buscarCliente}" styleClass="btn-primario" />
-						</div>
+                <!-- Buscar cliente existente -->
+                <div class="card">
+                    <div class="card-titulo">Buscar cliente existente</div>
+                    <h:form>
+                        <div class="form-campo">
+                            <label class="form-label">Número de documento</label>
+                            <h:inputText id="documentoBusqueda"
+                                value="#{ventaBean.documentoBusqueda}"
+                                styleClass="form-input"
+                                required="true"
+                                requiredMessage="Ingrese el número de documento"
+                                converterMessage="El documento no es válido"
+                                validatorMessage="El documento debe tener entre 5 y 20 caracteres"
+                                placeholder="Ej: 1234567890">
+                                <f:validateLength minimum="5" maximum="20" />
+                            </h:inputText>
+                            <h:message for="documentoBusqueda" styleClass="mensaje-error" />
+                        </div>
+                        <div class="btn-grupo">
+                            <h:commandButton value="Buscar"
+                                action="#{ventaBean.buscarCliente}"
+                                styleClass="btn-primario" />
+                        </div>
 
-						<!-- Cliente encontrado -->
-						<h:panelGroup rendered="#{ventaBean.cliente.idCliente != 0}">
-							<hr class="separador" />
-							<p style="font-size: 13px; color: #6B4C3B; margin-bottom: 16px">
-								Cliente encontrado: <strong>
-									#{ventaBean.cliente.nombre} #{ventaBean.cliente.apellido} </strong>
-							</p>
-							<h:commandButton value="Iniciar venta con este cliente"
-								action="#{ventaBean.iniciarVenta}" styleClass="btn-primario" />
-						</h:panelGroup>
-					</h:form>
-				</div>
+                        <!-- Cliente encontrado -->
+                        <h:panelGroup rendered="#{ventaBean.cliente.idCliente != 0}">
+                            <hr class="separador" />
+                            <p style="font-size: 13px; color: #6B4C3B; margin-bottom: 16px">
+                                Cliente encontrado: <strong>
+                                    #{ventaBean.cliente.nombre} #{ventaBean.cliente.apellido}
+                                </strong>
+                            </p>
+                            <h:commandButton value="Iniciar venta con este cliente"
+                                action="#{ventaBean.iniciarVenta}"
+                                styleClass="btn-primario" />
+                        </h:panelGroup>
+                    </h:form>
+                </div>
 
-				<!-- Registrar cliente nuevo -->
+                <!-- Registrar cliente nuevo -->
+                <div class="card">
+                    <div class="card-titulo">Registrar cliente nuevo</div>
+                    <h:form>
+                        <h:panelGroup rendered="#{not empty clienteBean.mensajeError}">
+                            <div class="mensaje-error">#{clienteBean.mensajeError}</div>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{not empty clienteBean.mensajeExito}">
+                            <div class="mensaje-exito">#{clienteBean.mensajeExito}</div>
+                        </h:panelGroup>
+                        <div class="form-grid">
 
-				<div class="card">
-					<div class="card-titulo">Registrar cliente nuevo</div>
-					<h:form>
-						<h:panelGroup rendered="#{not empty clienteBean.mensajeError}">
-							<div class="mensaje-error">#{clienteBean.mensajeError}</div>
-						</h:panelGroup>
-						<h:panelGroup rendered="#{not empty clienteBean.mensajeExito}">
-							<div class="mensaje-exito">#{clienteBean.mensajeExito}</div>
-						</h:panelGroup>
-						<div class="form-grid">
+                            <div class="form-campo">
+                                <label class="form-label">Tipo de documento</label>
+                                <h:selectOneMenu id="tipoDocumento"
+                                    value="#{clienteBean.idTipoDocSeleccionado}"
+                                    styleClass="form-select"
+                                    required="true"
+                                    requiredMessage="Debe seleccionar el tipo de documento"
+                                    validatorMessage="Debe seleccionar un tipo de documento válido">
+                                    <f:selectItem itemLabel="Seleccionar una opción..." itemValue="0" />
+                                    <f:selectItems value="#{clienteBean.listaTiposDocumento}"
+                                        var="td" itemLabel="#{td.nombre}"
+                                        itemValue="#{td.idTipoDoc}" />
+                                    <f:validateLongRange minimum="1" />
+                                </h:selectOneMenu>
+                                <h:message for="tipoDocumento" styleClass="mensaje-error" />
+                            </div>
 
-							<div class="form-campo">
-								<label class="form-label">Tipo de documento</label>
-								<h:selectOneMenu id="tipoDocumento"
-									value="#{clienteBean.cliente.tipoDocumento}"
-									styleClass="form-select" required="true"
-									requiredMessage="El tipo de documento es obligatorio">
-									<f:selectItem itemLabel="Seleccionar..." itemValue="#{null}" />
-									<f:selectItems value="#{clienteBean.tiposDocumento}" var="td"
-										itemLabel="#{td}" itemValue="#{td}" />
-								</h:selectOneMenu>
-								<h:message for="tipoDocumento" styleClass="mensaje-error" />
-							</div>
+                            <!-- 
+                                Número de documento:
+                                - Cédula: solo números, entre 6 y 10 dígitos
+                                - Pasaporte: letras y números, entre 5 y 20 caracteres
+                                Como el tipo se selecciona en otro campo y JSF no permite
+                                validación condicional directa en XHTML, usamos el patrón
+                                más permisivo que cubre ambos casos y dejamos la lógica
+                                específica al bean/service
+                            -->
+                            <div class="form-campo">
+                                <label class="form-label">Número de documento</label>
+                                <h:inputText id="numDocCliente"
+                                    value="#{clienteBean.cliente.numDocumento}"
+                                    styleClass="form-input"
+                                    required="true"
+                                    requiredMessage="El número de documento es obligatorio"
+                                    validatorMessage="El documento debe tener entre 5 y 20 caracteres alfanuméricos sin espacios"
+                                    placeholder="Ej: 1234567890">
+                                    <f:validateRegex pattern="^[a-zA-Z0-9]{5,20}$" />
+                                </h:inputText>
+                                <h:message for="numDocCliente" styleClass="mensaje-error" />
+                            </div>
 
-							<div class="form-campo">
-								<label class="form-label">Número de documento</label>
-								<h:inputText id="numDocCliente"
-									value="#{clienteBean.cliente.numDocumento}"
-									styleClass="form-input" required="true"
-									requiredMessage="El documento es obligatorio">
-									<f:validateLength minimum="5" maximum="20" />
-								</h:inputText>
-								<h:message for="numDocCliente" styleClass="mensaje-error" />
-							</div>
+                            <div class="form-campo">
+                                <label class="form-label">Nombre</label>
+                                <h:inputText id="nombreCliente"
+                                    value="#{clienteBean.cliente.nombre}"
+                                    styleClass="form-input"
+                                    required="true"
+                                    requiredMessage="El nombre es obligatorio"
+                                    validatorMessage="El nombre debe tener entre 2 y 50 letras, sin números ni caracteres especiales"
+                                    placeholder="Ej: María">
+                                    <f:validateRegex pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]{2,50}$" />
+                                </h:inputText>
+                                <h:message for="nombreCliente" styleClass="mensaje-error" />
+                            </div>
 
-							<div class="form-campo">
-								<label class="form-label">Nombre</label>
-								<h:inputText id="nombreCliente"
-									value="#{clienteBean.cliente.nombre}" styleClass="form-input"
-									required="true" requiredMessage="El nombre es obligatorio">
-									<f:validateLength minimum="2" maximum="50" />
-								</h:inputText>
-								<h:message for="nombreCliente" styleClass="mensaje-error" />
-							</div>
+                            <div class="form-campo">
+                                <label class="form-label">Apellido</label>
+                                <h:inputText id="apellidoCliente"
+                                    value="#{clienteBean.cliente.apellido}"
+                                    styleClass="form-input"
+                                    required="true"
+                                    requiredMessage="El apellido es obligatorio"
+                                    validatorMessage="El apellido debe tener entre 2 y 50 letras, sin números ni caracteres especiales"
+                                    placeholder="Ej: González">
+                                    <f:validateRegex pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]{2,50}$" />
+                                </h:inputText>
+                                <h:message for="apellidoCliente" styleClass="mensaje-error" />
+                            </div>
 
-							<div class="form-campo">
-								<label class="form-label">Apellido</label>
-								<h:inputText id="apellidoCliente"
-									value="#{clienteBean.cliente.apellido}" styleClass="form-input"
-									required="true" requiredMessage="El apellido es obligatorio">
-									<f:validateLength minimum="2" maximum="50" />
-								</h:inputText>
-								<h:message for="apellidoCliente" styleClass="mensaje-error" />
-							</div>
+                            <div class="form-campo form-grid-full">
+                                <label class="form-label">Correo (opcional)</label>
+                                <h:inputText id="correoCliente"
+                                    value="#{clienteBean.cliente.correo}"
+                                    styleClass="form-input"
+                                    placeholder="correo@ejemplo.com"
+                                    validatorMessage="El correo debe tener formato válido (ejemplo@dominio.com)">
+                                    <f:validateRegex pattern="^$|^[^@\s]+@[^@\s]+\.[^@\s]+$" />
+                                </h:inputText>
+                                <h:message for="correoCliente" styleClass="mensaje-error" />
+                            </div>
 
-							<div class="form-campo form-grid-full">
-								<label class="form-label">Correo (opcional)</label>
-								<h:inputText id="correoCliente"
-									value="#{clienteBean.cliente.correo}" styleClass="form-input"
-									placeholder="correo@ejemplo.com"
-									validatorMessage="El correo debe tener formato válido (ejemplo@dominio.com)">
-									<f:validateRegex pattern="^$|^[^@\s]+@[^@\s]+\.[^@\s]+$" />
-								</h:inputText>
-								<h:message for="correoCliente" styleClass="mensaje-error" />
-							</div>
+                        </div>
+                        <div class="btn-grupo">
+                            <h:commandButton value="Registrar cliente"
+                                action="#{clienteBean.registrar}"
+                                styleClass="btn-primario" />
+                        </div>
+                    </h:form>
+                </div>
 
-						</div>
-						<div class="btn-grupo">
-							<h:commandButton value="Registrar cliente"
-								action="#{clienteBean.registrar}" styleClass="btn-primario" />
-						</div>
-					</h:form>
-				</div>
+            </div>
+        </h:panelGroup>
 
-			</div>
-		</h:panelGroup>
+        <!-- PASO 2 y 3: Venta activa -->
+        <h:panelGroup rendered="#{ventaBean.ventaActiva != null}">
 
-		<!-- PASO 2 y 3: Venta activa -->
-		<h:panelGroup rendered="#{ventaBean.ventaActiva != null}">
+            <div class="pasos">
+                <span class="paso">1. Cliente</span>
+                <span class="paso #{empty ventaBean.detallesActivos ? 'activo' : ''}">2. Productos</span>
+                <span class="paso #{not empty ventaBean.detallesActivos ? 'activo' : ''}">3. Pago</span>
+            </div>
 
-			<div class="pasos">
-				<span class="paso">1. Cliente</span> <span
-					class="paso #{empty ventaBean.detallesActivos ? 'activo' : ''}">2.
-					Productos</span> <span
-					class="paso #{not empty ventaBean.detallesActivos ? 'activo' : ''}">3.
-					Pago</span>
-			</div>
+            <!-- Resumen venta activa -->
+            <div class="resumen-venta">
+                <div class="resumen-label">Venta ##{ventaBean.ventaActiva.idVenta} — Cliente:
+                    #{ventaBean.ventaActiva.cliente.nombre} #{ventaBean.ventaActiva.cliente.apellido}
+                </div>
+                <hr class="separador" />
+                <div class="resumen-label">Total acumulado</div>
+                <div class="resumen-total">$#{ventaBean.ventaActiva.total}</div>
+            </div>
 
-			<!-- Resumen venta activa -->
-			<div class="resumen-venta">
-				<div class="resumen-label">Venta
-					##{ventaBean.ventaActiva.idVenta} — Cliente:
-					#{ventaBean.ventaActiva.cliente.nombre}
-					#{ventaBean.ventaActiva.cliente.apellido}</div>
-				<hr class="separador" />
-				<div class="resumen-label">Total acumulado</div>
-				<div class="resumen-total">$#{ventaBean.ventaActiva.total}</div>
-			</div>
+            <div class="panel-grid">
 
-			<div class="panel-grid">
+                <!-- Panel izquierdo -->
+                <div>
 
-				<!-- Panel izquierdo -->
-				<div>
+                    <!-- Agregar producto -->
+                    <div class="card">
+                        <div class="card-titulo">Agregar producto</div>
+                        <h:form>
+                            <div class="form-grid">
 
-					<!-- Agregar producto -->
-					<div class="card">
-						<div class="card-titulo">Agregar producto</div>
-						<h:form>
-							<div class="form-grid">
+                                <div class="form-campo form-grid-full">
+                                    <label class="form-label">ID Inventario</label>
+                                    <h:inputText id="idInventario"
+                                        value="#{ventaBean.idInventarioSeleccionado}"
+                                        styleClass="form-input"
+                                        required="true"
+                                        requiredMessage="El ID de inventario es obligatorio"
+                                        converterMessage="El ID debe ser un número entero"
+                                        validatorMessage="Debe ingresar un ID de inventario válido (mayor a cero)"
+                                        placeholder="Ej: 1">
+                                        <f:validateLongRange minimum="1" maximum="99999" />
+                                    </h:inputText>
+                                    <h:message for="idInventario" styleClass="mensaje-error" />
+                                </div>
 
-								<div class="form-campo form-grid-full">
-									<label class="form-label">ID Inventario</label>
-									<h:inputText id="idInventario"
-										value="#{ventaBean.idInventarioSeleccionado}"
-										styleClass="form-input" required="true"
-										requiredMessage="El ID de inventario es obligatorio"
-										placeholder="ID de la combinación">
-										<f:validateLongRange minimum="1"
-											message="Debe ingresar un ID válido" />
-									</h:inputText>
-									<h:message for="idInventario" styleClass="mensaje-error" />
-								</div>
+                                <div class="form-campo form-grid-full">
+                                    <label class="form-label">Cantidad</label>
+                                    <h:inputText id="cantidad"
+                                        value="#{ventaBean.cantidadAgregar}"
+                                        styleClass="form-input"
+                                        required="true"
+                                        requiredMessage="La cantidad es obligatoria"
+                                        converterMessage="La cantidad debe ser un número entero"
+                                        validatorMessage="La cantidad debe ser entre 1 y 9999"
+                                        placeholder="Ej: 2">
+                                        <f:validateLongRange minimum="1" maximum="9999" />
+                                    </h:inputText>
+                                    <h:message for="cantidad" styleClass="mensaje-error" />
+                                </div>
 
-								<div class="form-campo form-grid-full">
-									<label class="form-label">Cantidad</label>
-									<h:inputText id="cantidad" value="#{ventaBean.cantidadAgregar}"
-										styleClass="form-input" required="true"
-										requiredMessage="La cantidad es obligatoria"
-										placeholder="Unidades">
-										<f:validateLongRange minimum="1"
-											message="La cantidad debe ser mayor a cero" />
-									</h:inputText>
-									<h:message for="cantidad" styleClass="mensaje-error" />
-								</div>
+                            </div>
+                            <div class="btn-grupo">
+                                <h:commandButton value="Agregar"
+                                    action="#{ventaBean.agregarProducto}"
+                                    styleClass="btn-primario" />
+                            </div>
+                        </h:form>
+                    </div>
 
-							</div>
-							<div class="btn-grupo">
-								<h:commandButton value="Agregar"
-									action="#{ventaBean.agregarProducto}" styleClass="btn-primario" />
-							</div>
-						</h:form>
-					</div>
+                    <!-- Registrar pago -->
+                    <div class="card">
+                        <div class="card-titulo">Registrar pago</div>
+                        <p style="font-size: 12px; color: #9C7B6B; margin-bottom: 12px;">
+                            Solo se aceptan pagos en pesos colombianos (COP).
+                            No se admiten divisas extranjeras ni tarjetas en moneda diferente a COP.
+                        </p>
+                        <h:form>
+                            <div class="form-grid">
 
-					<!-- Registrar pago -->
-					<div class="card">
-						<div class="card-titulo">Registrar pago</div>
-						<p style="font-size: 12px; color: #9C7B6B; margin-bottom: 12px;">
-							Solo se aceptan pagos en pesos colombianos (COP). No se admiten
-							divisas extranjeras ni tarjetas en moneda diferente a COP.</p>
-						<h:form>
-							<div class="form-grid">
+                                <div class="form-campo">
+                                    <label class="form-label">Método</label>
+                                    <h:selectOneMenu id="metodoPago"
+                                        value="#{ventaBean.idMetodoPagoSeleccionado}"
+                                        styleClass="form-select"
+                                        required="true"
+                                        requiredMessage="Debe seleccionar un método de pago"
+                                        validatorMessage="Debe seleccionar un método de pago válido">
+                                        <f:selectItem itemLabel="Seleccionar una opción..." itemValue="0" />
+                                        <f:selectItems value="#{ventaBean.metodosPago}" var="mp"
+                                            itemLabel="#{mp.nombre}"
+                                            itemValue="#{mp.idMetodoPago}" />
+                                        <f:validateLongRange minimum="1" />
+                                    </h:selectOneMenu>
+                                    <h:message for="metodoPago" styleClass="mensaje-error" />
+                                </div>
 
-								<div class="form-campo">
-									<label class="form-label">Método</label>
-									<h:selectOneMenu id="metodoPago"
-										value="#{ventaBean.pago.metodo}" styleClass="form-select"
-										required="true"
-										requiredMessage="Debe seleccionar un método de pago">
-										<f:selectItem itemLabel="Seleccionar..." itemValue="#{null}" />
-										<f:selectItems value="#{ventaBean.metodosPago}" var="mp"
-											itemLabel="#{mp}" itemValue="#{mp}" />
-									</h:selectOneMenu>
-									<h:message for="metodoPago" styleClass="mensaje-error" />
-								</div>
+                                <div class="form-campo">
+                                    <label class="form-label">Valor (COP)</label>
+                                    <h:inputText id="valorPago"
+                                        value="#{ventaBean.pago.valor}"
+                                        styleClass="form-input"
+                                        required="true"
+                                        requiredMessage="El valor del pago es obligatorio"
+                                        converterMessage="El valor debe ser un número válido (Ej: 50000)"
+                                        validatorMessage="El valor debe ser mayor a cero y no superar 999.999.999"
+                                        placeholder="Ej: 50000">
+                                        <f:validateDoubleRange minimum="0.01" maximum="999999999" />
+                                    </h:inputText>
+                                    <h:message for="valorPago" styleClass="mensaje-error" />
+                                </div>
 
-								<div class="form-campo">
-									<label class="form-label">Valor (COP)</label>
-									<h:inputText id="valorPago" value="#{ventaBean.pago.valor}"
-										styleClass="form-input" required="true"
-										requiredMessage="El valor del pago es obligatorio"
-										placeholder="Monto">
-										<f:validateDoubleRange minimum="0.01"
-											message="El valor debe ser mayor a cero" />
-									</h:inputText>
-									<h:message for="valorPago" styleClass="mensaje-error" />
-								</div>
+                                <div class="form-campo form-grid-full">
+                                    <label class="form-label">Referencia (tarjeta o transferencia)</label>
+                                    <h:inputText id="referenciaPago"
+                                        value="#{ventaBean.pago.referencia}"
+                                        styleClass="form-input"
+                                        validatorMessage="La referencia debe tener entre 4 y 100 caracteres"
+                                        placeholder="N° referencia o aprobación">
+                                        <f:validateLength minimum="0" maximum="100" />
+                                    </h:inputText>
+                                    <h:message for="referenciaPago" styleClass="mensaje-error" />
+                                </div>
 
-								<div class="form-campo form-grid-full">
-									<label class="form-label">Referencia (tarjeta o
-										transferencia)</label>
-									<h:inputText id="referenciaPago"
-										value="#{ventaBean.pago.referencia}" styleClass="form-input"
-										placeholder="N° referencia o aprobación" />
-									<h:message for="referenciaPago" styleClass="mensaje-error" />
-								</div>
+                            </div>
+                            <div class="btn-grupo">
+                                <h:commandButton value="Agregar pago"
+                                    action="#{ventaBean.registrarPago}"
+                                    styleClass="btn-primario" />
+                            </div>
+                        </h:form>
+                    </div>
 
-							</div>
-							<div class="btn-grupo">
-								<h:commandButton value="Agregar pago"
-									action="#{ventaBean.registrarPago}" styleClass="btn-primario" />
-							</div>
-						</h:form>
-					</div>
+                    <!-- Acciones finales -->
+                    <div class="card">
+                        <div class="card-titulo">Finalizar venta</div>
+                        <h:form>
+                            <div class="btn-grupo">
+                                <h:commandButton value="Completar venta"
+                                    action="#{ventaBean.completarVenta}"
+                                    styleClass="btn-primario"
+                                    onclick="return confirm('¿Confirma completar esta venta? Esta acción es definitiva.')" />
+                            </div>
+                        </h:form>
+                        <hr class="separador" />
+                        <h:form>
+                            <div class="form-campo">
+                                <label class="form-label">Motivo de anulación</label>
+                                <h:inputText id="motivoAnulacion"
+                                    value="#{ventaBean.motivoAnulacion}"
+                                    styleClass="form-input"
+                                    required="true"
+                                    requiredMessage="El motivo de anulación es obligatorio"
+                                    validatorMessage="El motivo debe tener entre 5 y 200 caracteres"
+                                    placeholder="Describe el motivo de la anulación">
+                                    <f:validateLength minimum="5" maximum="200" />
+                                </h:inputText>
+                                <h:message for="motivoAnulacion" styleClass="mensaje-error" />
+                            </div>
+                            <div class="btn-grupo">
+                                <h:commandButton value="Anular venta"
+                                    action="#{ventaBean.anularVenta(ventaBean.motivoAnulacion)}"
+                                    styleClass="btn-peligro"
+                                    onclick="return confirm('¿Confirma la anulación de esta venta? Se liberará el stock reservado.')" />
+                            </div>
+                        </h:form>
+                    </div>
 
-					<!-- Acciones finales -->
-					<div class="card">
-						<div class="card-titulo">Finalizar venta</div>
-						<h:form>
-							<div class="btn-grupo">
-								<h:commandButton value="Completar venta"
-									action="#{ventaBean.completarVenta}" styleClass="btn-primario" />
-							</div>
-						</h:form>
-						<hr class="separador" />
-						<h:form>
-							<div class="form-campo">
-								<label class="form-label">Motivo de anulación</label>
-								<h:inputText id="motivoAnulacion"
-									value="#{ventaBean.motivoAnulacion}" styleClass="form-input"
-									required="true"
-									requiredMessage="El motivo de anulación es obligatorio"
-									placeholder="Escribe el motivo">
-									<f:validateLength minimum="5" maximum="200" />
-								</h:inputText>
-								<h:message for="motivoAnulacion" styleClass="mensaje-error" />
-							</div>
-							<div class="btn-grupo">
-								<h:commandButton value="Anular venta"
-									action="#{ventaBean.anularVenta(ventaBean.motivoAnulacion)}"
-									styleClass="btn-peligro" />
-							</div>
-						</h:form>
-					</div>
+                </div>
 
-				</div>
+                <!-- Panel derecho -->
+                <div>
 
-				<!-- Panel derecho -->
-				<div>
+                    <!-- Productos en la venta -->
+                    <div class="card">
+                        <div class="card-titulo">Productos en esta venta</div>
+                        <h:panelGroup rendered="#{empty ventaBean.detallesActivos}">
+                            <p style="font-size: 13px; color: #9C7B6B">Aún no hay productos agregados.</p>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{not empty ventaBean.detallesActivos}">
+                            <div class="tabla-contenedor">
+                                <table class="tabla">
+                                    <thead>
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th>Talla</th>
+                                            <th>Color</th>
+                                            <th>Cant.</th>
+                                            <th>Precio</th>
+                                            <th>Subtotal</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <ui:repeat value="#{ventaBean.detallesActivos}" var="det">
+                                            <tr>
+                                                <td>#{det.inventario.producto.nombre}</td>
+                                                <td>#{det.inventario.talla.nombre}</td>
+                                                <td>#{det.inventario.color.nombre}</td>
+                                                <td>#{det.cantidad}</td>
+                                                <td>$#{det.precioUnitario}</td>
+                                                <td>$#{det.subtotal}</td>
+                                                <td>
+                                                    <h:form>
+                                                        <h:commandButton value="Quitar"
+                                                            action="#{ventaBean.quitarProducto(det.idDetalleVenta)}"
+                                                            styleClass="btn-tabla-peligro"
+                                                            onclick="return confirm('¿Quitar este producto de la venta?')" />
+                                                    </h:form>
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </h:panelGroup>
+                    </div>
 
-					<!-- Productos en la venta -->
-					<div class="card">
-						<div class="card-titulo">Productos en esta venta</div>
-						<h:panelGroup rendered="#{empty ventaBean.detallesActivos}">
-							<p style="font-size: 13px; color: #9C7B6B">Aún no hay
-								productos agregados.</p>
-						</h:panelGroup>
-						<h:panelGroup rendered="#{not empty ventaBean.detallesActivos}">
-							<div class="tabla-contenedor">
-								<table class="tabla">
-									<thead>
-										<tr>
-											<th>Producto</th>
-											<th>Talla</th>
-											<th>Color</th>
-											<th>Cant.</th>
-											<th>Precio</th>
-											<th>Subtotal</th>
-											<th></th>
-										</tr>
-									</thead>
-									<tbody>
-										<ui:repeat value="#{ventaBean.detallesActivos}" var="det">
-											<tr>
-												<td>#{det.inventario.producto.nombre}</td>
-												<td>#{det.inventario.talla.nombre}</td>
-												<td>#{det.inventario.color.nombre}</td>
-												<td>#{det.cantidad}</td>
-												<td>$#{det.precioUnitario}</td>
-												<td>$#{det.subtotal}</td>
-												<td><h:form>
-														<h:commandButton value="Quitar"
-															action="#{ventaBean.quitarProducto(det.idDetalleVenta)}"
-															styleClass="btn-tabla-peligro" />
-													</h:form></td>
-											</tr>
-										</ui:repeat>
-									</tbody>
-								</table>
-							</div>
-						</h:panelGroup>
-					</div>
+                    <!-- Pagos registrados -->
+                    <h:panelGroup rendered="#{not empty ventaBean.pagosActivos}">
+                        <div class="card">
+                            <div class="card-titulo">Pagos registrados</div>
+                            <div class="tabla-contenedor">
+                                <table class="tabla">
+                                    <thead>
+                                        <tr>
+                                            <th>Método</th>
+                                            <th>Valor</th>
+                                            <th>Referencia</th>
+                                            <th>Cambio</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <ui:repeat value="#{ventaBean.pagosActivos}" var="pag">
+                                            <tr>
+                                                <td>#{pag.metodoPago.nombre}</td>
+                                                <td>$#{pag.valor}</td>
+                                                <td>#{pag.referencia != null ? pag.referencia : '-'}</td>
+                                                <td>#{pag.cambio != null ? pag.cambio : '-'}</td>
+                                            </tr>
+                                        </ui:repeat>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </h:panelGroup>
 
-					<!-- Pagos registrados -->
-					<h:panelGroup rendered="#{not empty ventaBean.pagosActivos}">
-						<div class="card">
-							<div class="card-titulo">Pagos registrados</div>
-							<div class="tabla-contenedor">
-								<table class="tabla">
-									<thead>
-										<tr>
-											<th>Método</th>
-											<th>Valor</th>
-											<th>Referencia</th>
-											<th>Cambio</th>
-										</tr>
-									</thead>
-									<tbody>
-										<ui:repeat value="#{ventaBean.pagosActivos}" var="pag">
-											<tr>
-												<td>#{pag.metodo}</td>
-												<td>$#{pag.valor}</td>
-												<td>#{pag.referencia != null ? pag.referencia : '-'}</td>
-												<td>#{pag.cambio != null ? pag.cambio : '-'}</td>
-											</tr>
-										</ui:repeat>
-									</tbody>
-								</table>
-							</div>
-						</div>
-					</h:panelGroup>
+                </div>
 
-				</div>
+            </div>
+        </h:panelGroup>
 
-			</div>
-		</h:panelGroup>
-
-	</ui:define>
+    </ui:define>
 </ui:composition>
 </html>

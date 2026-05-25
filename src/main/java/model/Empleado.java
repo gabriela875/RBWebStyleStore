@@ -32,12 +32,6 @@ public class Empleado {
 	@Column(name = "Contrasena", nullable = false)
 	private String contrasena;
 
-	@Column(name = "Estado", nullable = false)
-	private boolean estado; // true = activo, false = inactivo
-
-	@Column(name = "Bloqueado", nullable = false)
-	private boolean bloqueado;
-
 	@Column(name = "Intentos_fallidos", nullable = false)
 	private int intentosFallidos;
 
@@ -46,23 +40,34 @@ public class Empleado {
 	@NotNull(message = "El cargo es obligatorio")
 	private Cargo cargo;
 
+	@ManyToOne
+	@JoinColumn(name = "id_Estado_Emp", nullable = false)
+	@NotNull(message = "El estado es obligatorio")
+	private EstadoEmpleado estadoEmpleado;
+
+	@ManyToOne
+	@JoinColumn(name = "id_Estado_Bloq", nullable = false)
+	@NotNull(message = "El estado de bloqueo es obligatorio")
+	private EstadoBloqueo estadoBloqueo;
+
 	public Empleado() {
 	}
 
+	// Getters y setters
 	public int getIdEmpleado() {
 		return idEmpleado;
 	}
 
-	public void setIdEmpleado(int idEmpleado) {
-		this.idEmpleado = idEmpleado;
+	public void setIdEmpleado(int id) {
+		this.idEmpleado = id;
 	}
 
 	public String getNumDocumento() {
 		return numDocumento;
 	}
 
-	public void setNumDocumento(String numDocumento) {
-		this.numDocumento = numDocumento;
+	public void setNumDocumento(String num) {
+		this.numDocumento = num;
 	}
 
 	public String getNombre() {
@@ -97,28 +102,12 @@ public class Empleado {
 		this.contrasena = contrasena;
 	}
 
-	public boolean isEstado() {
-		return estado;
-	}
-
-	public void setEstado(boolean estado) {
-		this.estado = estado;
-	}
-
-	public boolean isBloqueado() {
-		return bloqueado;
-	}
-
-	public void setBloqueado(boolean bloqueado) {
-		this.bloqueado = bloqueado;
-	}
-
 	public int getIntentosFallidos() {
 		return intentosFallidos;
 	}
 
-	public void setIntentosFallidos(int intentosFallidos) {
-		this.intentosFallidos = intentosFallidos;
+	public void setIntentosFallidos(int intentos) {
+		this.intentosFallidos = intentos;
 	}
 
 	public Cargo getCargo() {
@@ -127,5 +116,21 @@ public class Empleado {
 
 	public void setCargo(Cargo cargo) {
 		this.cargo = cargo;
+	}
+
+	public EstadoEmpleado getEstadoEmpleado() {
+		return estadoEmpleado;
+	}
+
+	public void setEstadoEmpleado(EstadoEmpleado estado) {
+		this.estadoEmpleado = estado;
+	}
+
+	public EstadoBloqueo getEstadoBloqueo() {
+		return estadoBloqueo;
+	}
+
+	public void setEstadoBloqueo(EstadoBloqueo bloqueo) {
+		this.estadoBloqueo = bloqueo;
 	}
 }

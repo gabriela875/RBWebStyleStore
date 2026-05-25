@@ -1,128 +1,166 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="jakarta.faces.html"
-	xmlns:ui="jakarta.faces.facelets" xmlns:f="jakarta.faces.core">
+    xmlns:ui="jakarta.faces.facelets" xmlns:f="jakarta.faces.core">
 
 <ui:composition template="/WEB-INF/templates/plantilla.xhtml">
-	<ui:define name="contenido">
+    <ui:define name="contenido">
 
-		<h:outputStylesheet library="css" name="vistas.css" />
+        <h:outputStylesheet library="css" name="vistas.css" />
 
-		<h1 class="pagina-titulo">Clientes</h1>
-		<p class="pagina-subtitulo">Gestión de clientes del sistema</p>
+        <h1 class="pagina-titulo">Clientes</h1>
+        <p class="pagina-subtitulo">Gestión de clientes del sistema</p>
 
-		<h:panelGroup rendered="#{not empty clienteBean.mensajeExito}">
-			<div class="mensaje-exito">#{clienteBean.mensajeExito}</div>
-		</h:panelGroup>
-		<h:panelGroup rendered="#{not empty clienteBean.mensajeError}">
-			<div class="mensaje-error">#{clienteBean.mensajeError}</div>
-		</h:panelGroup>
+        <h:panelGroup rendered="#{not empty clienteBean.mensajeExito}">
+            <div class="mensaje-exito">#{clienteBean.mensajeExito}</div>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{not empty clienteBean.mensajeError}">
+            <div class="mensaje-error">#{clienteBean.mensajeError}</div>
+        </h:panelGroup>
 
-		<div class="panel-grid">
+        <div class="panel-grid">
 
-			<!-- Formulario edición -->
-			<div class="card">
-				<div class="card-titulo">Editar cliente</div>
-				<h:form>
-					<div class="form-grid">
+            <!-- Formulario edición -->
+            <div class="card">
+                <div class="card-titulo">Editar cliente</div>
+                <h:panelGroup rendered="#{clienteBean.cliente.idCliente == 0}">
+                    <p style="font-size: 13px; color: #9C7B6B; margin-bottom: 12px;">
+                        Seleccione un cliente de la tabla para editar sus datos.
+                    </p>
+                </h:panelGroup>
+                <h:form>
+                    <div class="form-grid">
 
-						<div class="form-campo form-grid-full">
-							<label class="form-label">Número de documento</label>
-							<h:inputText id="numDoc"
-								value="#{clienteBean.cliente.numDocumento}"
-								styleClass="form-input" disabled="true" />
-						</div>
+                        <!-- Número de documento: solo lectura, no se puede modificar -->
+                        <div class="form-campo form-grid-full">
+                            <label class="form-label">Número de documento
+                                <span style="font-size: 11px; color: #9C7B6B;">
+                                    (no modificable)
+                                </span>
+                            </label>
+                            <h:inputText id="numDoc"
+                                value="#{clienteBean.cliente.numDocumento}"
+                                styleClass="form-input"
+                                disabled="true" />
+                        </div>
 
-						<div class="form-campo">
-							<label class="form-label">Tipo de documento</label>
-							<h:selectOneMenu id="tipoDoc"
-								value="#{clienteBean.cliente.tipoDocumento}"
-								styleClass="form-select" required="true"
-								requiredMessage="El tipo de documento es obligatorio">
-								<f:selectItem itemLabel="Seleccionar..." itemValue="#{null}" />
-								<f:selectItems value="#{clienteBean.tiposDocumento}" var="td"
-									itemLabel="#{td}" itemValue="#{td}" />
-							</h:selectOneMenu>
-							<h:message for="tipoDoc" styleClass="mensaje-error" />
-						</div>
+                        <div class="form-campo">
+                            <label class="form-label">Tipo de documento</label>
+                            <h:selectOneMenu id="tipoDoc"
+                                value="#{clienteBean.idTipoDocSeleccionado}"
+                                styleClass="form-select"
+                                required="true"
+                                requiredMessage="Debe seleccionar el tipo de documento"
+                                validatorMessage="Debe seleccionar un tipo de documento válido">
+                                <f:selectItem itemLabel="Seleccionar una opción..." itemValue="0" />
+                                <f:selectItems value="#{clienteBean.listaTiposDocumento}"
+                                    var="td" itemLabel="#{td.nombre}"
+                                    itemValue="#{td.idTipoDoc}" />
+                                <f:validateLongRange minimum="1" />
+                            </h:selectOneMenu>
+                            <h:message for="tipoDoc" styleClass="mensaje-error" />
+                        </div>
 
-						<div class="form-campo">
-							<label class="form-label">Nombre</label>
-							<h:inputText id="nombre" value="#{clienteBean.cliente.nombre}"
-								styleClass="form-input" required="true"
-								requiredMessage="El nombre es obligatorio">
-								<f:validateLength minimum="2" maximum="100" />
-							</h:inputText>
-							<h:message for="nombre" styleClass="mensaje-error" />
-						</div>
+                        <div class="form-campo">
+                            <label class="form-label">Nombre</label>
+                            <h:inputText id="nombre"
+                                value="#{clienteBean.cliente.nombre}"
+                                styleClass="form-input"
+                                required="true"
+                                requiredMessage="El nombre es obligatorio"
+                                validatorMessage="El nombre debe tener entre 2 y 100 letras, sin números ni caracteres especiales"
+                                placeholder="Ej: María">
+                                <f:validateRegex pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]{2,100}$" />
+                            </h:inputText>
+                            <h:message for="nombre" styleClass="mensaje-error" />
+                        </div>
 
-						<div class="form-campo">
-							<label class="form-label">Apellido</label>
-							<h:inputText id="apellido"
-								value="#{clienteBean.cliente.apellido}" styleClass="form-input"
-								required="true" requiredMessage="El apellido es obligatorio">
-								<f:validateLength minimum="2" maximum="100" />
-							</h:inputText>
-							<h:message for="apellido" styleClass="mensaje-error" />
-						</div>
+                        <div class="form-campo">
+                            <label class="form-label">Apellido</label>
+                            <h:inputText id="apellido"
+                                value="#{clienteBean.cliente.apellido}"
+                                styleClass="form-input"
+                                required="true"
+                                requiredMessage="El apellido es obligatorio"
+                                validatorMessage="El apellido debe tener entre 2 y 100 letras, sin números ni caracteres especiales"
+                                placeholder="Ej: González">
+                                <f:validateRegex pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]{2,100}$" />
+                            </h:inputText>
+                            <h:message for="apellido" styleClass="mensaje-error" />
+                        </div>
 
-						<div class="form-campo form-grid-full">
-							<label class="form-label">Correo (opcional)</label>
-							<h:inputText id="correo" value="#{clienteBean.cliente.correo}"
-								styleClass="form-input" placeholder="correo@ejemplo.com"
-								validatorMessage="El correo debe tener formato válido">
-								<f:validateRegex pattern="^$|^[^@\s]+@[^@\s]+\.[^@\s]+$" />
-							</h:inputText>
-							<h:message for="correo" styleClass="mensaje-error" />
-						</div>
+                        <div class="form-campo form-grid-full">
+                            <label class="form-label">Correo (opcional)</label>
+                            <h:inputText id="correo"
+                                value="#{clienteBean.cliente.correo}"
+                                styleClass="form-input"
+                                placeholder="correo@ejemplo.com"
+                                validatorMessage="El correo debe tener formato válido (ejemplo@dominio.com)">
+                                <f:validateRegex pattern="^$|^[^@\s]+@[^@\s]+\.[^@\s]+$" />
+                            </h:inputText>
+                            <h:message for="correo" styleClass="mensaje-error" />
+                        </div>
 
-					</div>
+                    </div>
 
-					<div class="btn-grupo">
-						<h:commandButton value="Guardar cambios"
-							action="#{clienteBean.editar}" styleClass="btn-primario"
-							rendered="#{clienteBean.cliente.idCliente != 0}" />
-						<h:commandButton value="Limpiar" action="#{clienteBean.nuevo}"
-							styleClass="btn-secundario" immediate="true" />
-					</div>
-				</h:form>
-			</div>
+                    <div class="btn-grupo">
+                        <h:commandButton value="Guardar cambios"
+                            action="#{clienteBean.editar}"
+                            styleClass="btn-primario"
+                            rendered="#{clienteBean.cliente.idCliente != 0}"
+                            onclick="return confirm('¿Confirma los cambios en los datos del cliente?')" />
+                        <h:commandButton value="Limpiar"
+                            action="#{clienteBean.nuevo}"
+                            styleClass="btn-secundario"
+                            immediate="true" />
+                    </div>
+                </h:form>
+            </div>
 
-			<!-- Tabla clientes -->
-			<div class="card">
-				<div class="card-titulo">Clientes registrados</div>
-				<div class="tabla-contenedor">
-					<table class="tabla">
-						<thead>
-							<tr>
-								<th>Documento</th>
-								<th>Nombre</th>
-								<th>Apellido</th>
-								<th>Correo</th>
-								<th>Acciones</th>
-							</tr>
-						</thead>
-						<tbody>
-							<ui:repeat value="#{clienteBean.listaClientes}" var="cli">
-								<tr>
-									<td>#{cli.numDocumento}</td>
-									<td>#{cli.nombre}</td>
-									<td>#{cli.apellido}</td>
-									<td>#{cli.correo != null ? cli.correo : '-'}</td>
-									<td><h:form>
-											<h:commandButton value="Editar"
-												action="#{clienteBean.cargarCliente(cli.idCliente)}"
-												styleClass="btn-tabla" />
-										</h:form></td>
-								</tr>
-							</ui:repeat>
-						</tbody>
-					</table>
-				</div>
-			</div>
+            <!-- Tabla clientes -->
+            <div class="card">
+                <div class="card-titulo">Clientes registrados</div>
+                <h:panelGroup rendered="#{empty clienteBean.listaClientes}">
+                    <p style="font-size: 13px; color: #9C7B6B">
+                        No hay clientes registrados en el sistema.
+                    </p>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{not empty clienteBean.listaClientes}">
+                    <div class="tabla-contenedor">
+                        <table class="tabla">
+                            <thead>
+                                <tr>
+                                    <th>Documento</th>
+                                    <th>Nombre</th>
+                                    <th>Apellido</th>
+                                    <th>Correo</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ui:repeat value="#{clienteBean.listaClientes}" var="cli">
+                                    <tr>
+                                        <td>#{cli.numDocumento}</td>
+                                        <td>#{cli.nombre}</td>
+                                        <td>#{cli.apellido}</td>
+                                        <td>#{cli.correo != null ? cli.correo : '-'}</td>
+                                        <td>
+                                            <h:form>
+                                                <h:commandButton value="Editar"
+                                                    action="#{clienteBean.cargarCliente(cli.idCliente)}"
+                                                    styleClass="btn-tabla" />
+                                            </h:form>
+                                        </td>
+                                    </tr>
+                                </ui:repeat>
+                            </tbody>
+                        </table>
+                    </div>
+                </h:panelGroup>
+            </div>
 
-		</div>
+        </div>
 
-	</ui:define>
+    </ui:define>
 </ui:composition>
 </html>

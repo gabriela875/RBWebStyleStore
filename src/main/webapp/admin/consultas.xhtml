@@ -71,11 +71,12 @@
 									<td>#{v.empleado.nombre} #{v.empleado.apellido}</td>
 									<td>$#{v.total}</td>
 									<td><h:panelGroup
-											rendered="#{v.estado.name() == 'pendiente'}">
+											rendered="#{v.estadoVenta.nombre == 'Pendiente'}">
 											<span class="badge badge-pendiente">Pendiente</span>
-										</h:panelGroup> <h:panelGroup rendered="#{v.estado.name() == 'completada'}">
+										</h:panelGroup> <h:panelGroup
+											rendered="#{v.estadoVenta.nombre == 'Completada'}">
 											<span class="badge badge-completada">Completada</span>
-										</h:panelGroup> <h:panelGroup rendered="#{v.estado.name() == 'anulada'}">
+										</h:panelGroup> <h:panelGroup rendered="#{v.estadoVenta.nombre == 'Anulada'}">
 											<span class="badge badge-anulada">Anulada</span>
 										</h:panelGroup></td>
 								</tr>
@@ -141,7 +142,7 @@
 							<ui:repeat value="#{consultaBean.listaPagos}" var="p">
 								<tr>
 									<td>#{p.idPago}</td>
-									<td>#{p.metodo}</td>
+									<td>#{p.metodoPago.nombre}</td>
 									<td>$#{p.valor}</td>
 									<td>#{p.referencia != null ? p.referencia : '-'}</td>
 									<td>#{p.cambio != null ? p.cambio : '-'}</td>
@@ -204,9 +205,11 @@
 									<td>#{emp.numDocumento}</td>
 									<td>#{emp.cargo.tipo}</td>
 									<td>#{emp.usuario}</td>
-									<td><h:panelGroup rendered="#{emp.estado}">
+									<td><h:panelGroup
+											rendered="#{emp.estadoEmpleado.nombre == 'Activo'}">
 											<span class="badge badge-activo">Activo</span>
-										</h:panelGroup> <h:panelGroup rendered="#{!emp.estado}">
+										</h:panelGroup> <h:panelGroup
+											rendered="#{emp.estadoEmpleado.nombre == 'Inactivo'}">
 											<span class="badge badge-inactivo">Inactivo</span>
 										</h:panelGroup></td>
 								</tr>
@@ -235,7 +238,7 @@
 							<ui:repeat value="#{consultaBean.listaClientes}" var="cli">
 								<tr>
 									<td>#{cli.nombre} #{cli.apellido}</td>
-									<td>#{cli.tipoDocumento}</td>
+									<td>#{cli.tipoDocumento.nombre}</td>
 									<td>#{cli.numDocumento}</td>
 									<td>#{cli.correo != null ? cli.correo : '-'}</td>
 								</tr>
@@ -268,7 +271,7 @@
 									<td>#{prod.nombre}</td>
 									<td>#{prod.categoria.nombre}</td>
 									<td>$#{prod.precioBase}</td>
-									<td>#{prod.estado}</td>
+									<td>#{prod.estadoProducto.nombre}</td>
 								</tr>
 							</ui:repeat>
 						</tbody>

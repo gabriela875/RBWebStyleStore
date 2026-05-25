@@ -134,6 +134,8 @@ public class EmpleadoBean implements Serializable {
 			em.close();
 		}
 	}
+	
+	
 
 	public Empleado getEmpleado() {
 		return empleado;

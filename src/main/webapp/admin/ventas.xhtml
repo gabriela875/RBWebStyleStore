@@ -18,7 +18,6 @@
 			<div class="mensaje-error">#{ventaBean.mensajeError}</div>
 		</h:panelGroup>
 
-
 		<!-- Tabla todas las ventas -->
 		<div class="card">
 			<div class="card-titulo">Todas las ventas</div>
@@ -42,31 +41,48 @@
 								<td>#{v.fechaHora}</td>
 								<td>#{v.cliente.nombre} #{v.cliente.apellido}</td>
 								<td>#{v.empleado.nombre} #{v.empleado.apellido}</td>
-								<td>$#{v.total}</td>
+								<!-- Total siempre en COP, solo lectura, el bean lo calcula -->
+								<td>$#{v.total} COP</td>
 								<td><h:panelGroup
-										rendered="#{v.estado.name() == 'pendiente'}">
+										rendered="#{v.estadoVenta.nombre == 'Pendiente'}">
 										<span class="badge badge-pendiente">Pendiente</span>
-									</h:panelGroup> <h:panelGroup rendered="#{v.estado.name() == 'completada'}">
+									</h:panelGroup> <h:panelGroup
+										rendered="#{v.estadoVenta.nombre == 'Completada'}">
 										<span class="badge badge-completada">Completada</span>
-									</h:panelGroup> <h:panelGroup rendered="#{v.estado.name() == 'anulada'}">
+									</h:panelGroup> <h:panelGroup rendered="#{v.estadoVenta.nombre == 'Anulada'}">
 										<span class="badge badge-anulada">Anulada</span>
 									</h:panelGroup></td>
-								<td><h:panelGroup
-										rendered="#{v.estado.name() == 'pendiente'}">
-										<h:form>
+								<td>
+									<!-- Botón anular SOLO visible si la venta está Pendiente --> <h:panelGroup
+										rendered="#{v.estadoVenta.nombre == 'Pendiente'}">
+										<h:form id="formAnular_#{v.idVenta}">
+
 											<h:inputText id="motivoAnulacion"
 												value="#{ventaBean.motivoAnulacion}" styleClass="form-input"
 												style="width:130px" required="true"
-												requiredMessage="El motivo es obligatorio"
-												placeholder="Motivo">
+												requiredMessage="El motivo de anulación es obligatorio"
+												placeholder="Motivo (mín. 5 caracteres)"
+												onkeypress="return /[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9 .,;:()\-]/.test(event.key)"
+												onpaste="return false"
+												validatorMessage="El motivo debe tener entre 5 y 200 caracteres y solo caracteres permitidos">
 												<f:validateLength minimum="5" maximum="200" />
+												<f:validateRegex
+													pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9 .,;:()\-]{5,200}$" />
 											</h:inputText>
-											<h:message for="motivoAnulacion" styleClass="mensaje-error" />
+											<h:message for="motivoAnulacion" styleClass="mensaje-error"
+												style="display:block; font-size:11px;" showSummary="true"
+												showDetail="false" />
+
 											<h:commandButton value="Anular"
 												action="#{ventaBean.anularVentaAdmin(v.idVenta)}"
-												styleClass="btn-tabla-peligro" />
+												styleClass="btn-tabla-peligro"
+												onclick="return confirm('¿Está seguro de que desea anular esta venta? Esta acción no se puede deshacer.')" />
 										</h:form>
-									</h:panelGroup></td>
+									</h:panelGroup> <!-- Si está Completada o Anulada no se muestra ninguna acción -->
+									<h:panelGroup rendered="#{v.estadoVenta.nombre != 'Pendiente'}">
+										<span style="color: #9C7B6B; font-size: 12px;">—</span>
+									</h:panelGroup>
+								</td>
 							</tr>
 						</ui:repeat>
 					</tbody>
@@ -74,7 +90,7 @@
 			</div>
 		</div>
 
-		<!-- Anulaciones -->
+		<!-- Registro de anulaciones -->
 		<div class="card">
 			<div class="card-titulo">Registro de anulaciones</div>
 			<div class="tabla-contenedor">
@@ -91,6 +107,7 @@
 						<ui:repeat value="#{ventaBean.listarAnulaciones()}" var="an">
 							<tr>
 								<td>#{an.venta.idVenta}</td>
+								<!-- Motivo solo lectura, se muestra tal como fue guardado -->
 								<td>#{an.motivo}</td>
 								<td>#{an.fechaHora}</td>
 								<td>#{an.empleado.nombre} #{an.empleado.apellido}</td>

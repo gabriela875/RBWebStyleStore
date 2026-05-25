@@ -24,15 +24,17 @@
 			<!-- Formulario registro -->
 			<div class="card">
 				<div class="card-titulo">Nuevo empleado</div>
-				<h:form>
+				<h:form id="formRegistro">
 					<div class="form-grid">
 
 						<div class="form-campo">
 							<label class="form-label">Nombre</label>
 							<h:inputText id="nombre" value="#{empleadoBean.empleado.nombre}"
 								styleClass="form-input" required="true"
-								requiredMessage="El nombre es obligatorio">
+								requiredMessage="El nombre es obligatorio."
+								validatorMessage="El nombre debe tener entre 2 y 50 letras y no puede contener números ni caracteres especiales.">
 								<f:validateLength minimum="2" maximum="50" />
+								<f:validateRegex pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$" />
 							</h:inputText>
 							<h:message for="nombre" styleClass="mensaje-error" />
 						</div>
@@ -42,8 +44,10 @@
 							<h:inputText id="apellido"
 								value="#{empleadoBean.empleado.apellido}"
 								styleClass="form-input" required="true"
-								requiredMessage="El apellido es obligatorio">
+								requiredMessage="El apellido es obligatorio."
+								validatorMessage="El apellido debe tener entre 2 y 50 letras y no puede contener números ni caracteres especiales.">
 								<f:validateLength minimum="2" maximum="50" />
+								<f:validateRegex pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$" />
 							</h:inputText>
 							<h:message for="apellido" styleClass="mensaje-error" />
 						</div>
@@ -53,8 +57,10 @@
 							<h:inputText id="numDocumento"
 								value="#{empleadoBean.empleado.numDocumento}"
 								styleClass="form-input" required="true"
-								requiredMessage="El documento es obligatorio">
+								requiredMessage="El número de documento es obligatorio."
+								validatorMessage="El documento debe tener entre 5 y 20 dígitos numéricos.">
 								<f:validateLength minimum="5" maximum="20" />
+								<f:validateRegex pattern="^\d{5,20}$" />
 							</h:inputText>
 							<h:message for="numDocumento" styleClass="mensaje-error" />
 						</div>
@@ -64,8 +70,9 @@
 							<h:selectOneMenu id="cargo"
 								value="#{empleadoBean.idCargoSeleccionado}"
 								styleClass="form-select" required="true"
-								requiredMessage="El cargo es obligatorio">
-								<f:selectItem itemLabel="Seleccionar..." itemValue="0" />
+								requiredMessage="Debe seleccionar un cargo.">
+								<f:selectItem itemLabel="Seleccionar..." itemValue="#{null}"
+									noSelectionOption="true" />
 								<f:selectItems value="#{empleadoBean.listaCargos}" var="c"
 									itemLabel="#{c.tipo}" itemValue="#{c.idCargo}" />
 							</h:selectOneMenu>
@@ -76,8 +83,10 @@
 							<label class="form-label">Usuario</label>
 							<h:inputText id="usuario"
 								value="#{empleadoBean.empleado.usuario}" styleClass="form-input"
-								required="true" requiredMessage="El usuario es obligatorio">
+								required="true" requiredMessage="El usuario es obligatorio."
+								validatorMessage="El usuario debe tener entre 4 y 30 caracteres y solo puede contener letras, números y guion bajo.">
 								<f:validateLength minimum="4" maximum="30" />
+								<f:validateRegex pattern="^[a-zA-Z0-9_]+$" />
 							</h:inputText>
 							<h:message for="usuario" styleClass="mensaje-error" />
 						</div>
@@ -87,7 +96,8 @@
 							<h:inputSecret id="contrasena"
 								value="#{empleadoBean.empleado.contrasena}"
 								styleClass="form-input" required="true"
-								requiredMessage="La contraseña es obligatoria">
+								requiredMessage="La contraseña es obligatoria."
+								validatorMessage="La contraseña debe tener entre 6 y 50 caracteres.">
 								<f:validateLength minimum="6" maximum="50" />
 							</h:inputSecret>
 							<h:message for="contrasena" styleClass="mensaje-error" />
@@ -98,7 +108,7 @@
 					<div class="btn-grupo">
 						<h:commandButton value="Registrar"
 							action="#{empleadoBean.registrar}" styleClass="btn-primario">
-							<f:ajax execute="@form" render="@all" />
+							<f:ajax execute="@form" render="@form" />
 						</h:commandButton>
 					</div>
 
@@ -127,26 +137,32 @@
 									<td>#{emp.numDocumento}</td>
 									<td>#{emp.cargo.tipo}</td>
 									<td>#{emp.usuario}</td>
-									<td><h:panelGroup rendered="#{emp.estado}">
+									<td><h:panelGroup
+											rendered="#{emp.estadoEmpleado.nombre == 'Activo'}">
 											<span class="badge badge-activo">Activo</span>
-										</h:panelGroup> <h:panelGroup rendered="#{!emp.estado}">
+										</h:panelGroup> <h:panelGroup
+											rendered="#{emp.estadoEmpleado.nombre == 'Inactivo'}">
 											<span class="badge badge-inactivo">Inactivo</span>
 										</h:panelGroup></td>
 									<td>
 										<div class="acciones">
 											<h:form>
-												<h:commandButton value="Desactivar" rendered="#{emp.estado}"
+												<h:commandButton value="Desactivar"
+													rendered="#{emp.estadoEmpleado.nombre == 'Activo'}"
 													action="#{empleadoBean.desactivar(emp.idEmpleado)}"
-													styleClass="btn-tabla-peligro" />
-												<h:commandButton value="Activar" rendered="#{!emp.estado}"
+													styleClass="btn-tabla-peligro"
+													onclick="return confirm('¿Desactivar a #{emp.nombre} #{emp.apellido}? No podrá iniciar sesión ni realizar operaciones.');" />
+												<h:commandButton value="Activar"
+													rendered="#{emp.estadoEmpleado.nombre == 'Inactivo'}"
 													action="#{empleadoBean.activar(emp.idEmpleado)}"
 													styleClass="btn-tabla" />
 											</h:form>
 											<h:form>
 												<h:commandButton value="Desbloquear"
-													rendered="#{emp.bloqueado}"
+													rendered="#{emp.estadoBloqueo.nombre == 'Bloqueado'}"
 													action="#{authBean.desbloquear(emp.idEmpleado)}"
-													styleClass="btn-tabla" />
+													styleClass="btn-tabla"
+													onclick="return confirm('¿Desbloquear la cuenta de #{emp.nombre} #{emp.apellido}? Se reiniciará el contador de intentos fallidos.');" />
 											</h:form>
 										</div>
 									</td>

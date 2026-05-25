@@ -14,29 +14,23 @@ public class Pago {
 	private int idPago;
 
 	@NotNull(message = "El valor es obligatorio")
-	@DecimalMin(value = "0.01", message = "El valor debe ser mayor a cero")
 	@Column(name = "Valor", nullable = false, precision = 12, scale = 2)
 	private BigDecimal valor;
 
+	@ManyToOne
+	@JoinColumn(name = "id_Metodo_Pago", nullable = false)
 	@NotNull(message = "El método de pago es obligatorio")
-	@Enumerated(EnumType.STRING)
-	@Column(name = "Metodo", nullable = false)
-	private MetodoPago metodo;
+	private MetodoPago metodoPago;
 
 	@Column(name = "Referencia")
-	private String referencia; // solo tarjeta o transferencia, null para efectivo
+	private String referencia;
 
 	@Column(name = "Cambio", precision = 12, scale = 2)
-	private BigDecimal cambio; // solo efectivo cuando paga de mas, null en otros casos
+	private BigDecimal cambio;
 
 	@ManyToOne
 	@JoinColumn(name = "id_Venta", nullable = false)
-	@NotNull(message = "La venta es obligatoria")
 	private Venta venta;
-
-	public enum MetodoPago {
-		efectivo, tarjeta, transferencia
-	}
 
 	public Pago() {
 	}
@@ -45,8 +39,8 @@ public class Pago {
 		return idPago;
 	}
 
-	public void setIdPago(int idPago) {
-		this.idPago = idPago;
+	public void setIdPago(int id) {
+		this.idPago = id;
 	}
 
 	public BigDecimal getValor() {
@@ -57,20 +51,20 @@ public class Pago {
 		this.valor = valor;
 	}
 
-	public MetodoPago getMetodo() {
-		return metodo;
+	public MetodoPago getMetodoPago() {
+		return metodoPago;
 	}
 
-	public void setMetodo(MetodoPago metodo) {
-		this.metodo = metodo;
+	public void setMetodoPago(MetodoPago metodo) {
+		this.metodoPago = metodo;
 	}
 
 	public String getReferencia() {
 		return referencia;
 	}
 
-	public void setReferencia(String referencia) {
-		this.referencia = referencia;
+	public void setReferencia(String ref) {
+		this.referencia = ref;
 	}
 
 	public BigDecimal getCambio() {

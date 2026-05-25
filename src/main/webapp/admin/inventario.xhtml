@@ -25,17 +25,21 @@
 				<!-- Buscar por producto -->
 				<div class="card">
 					<div class="card-titulo">Buscar por producto</div>
-					<h:form>
+					<h:form id="formBuscar">
 						<div class="form-campo">
 							<label class="form-label">Producto</label>
 							<h:selectOneMenu id="productoBuscar"
 								value="#{inventarioBean.idProductoFiltro}"
 								styleClass="form-select" required="true"
-								requiredMessage="Debe seleccionar un producto">
+								requiredMessage="Debe seleccionar un producto"
+								validatorMessage="Seleccione un producto.">
 								<f:selectItem itemLabel="Seleccionar..." itemValue="0" />
 								<f:selectItems value="#{inventarioBean.listaProductos}"
 									var="prod" itemLabel="#{prod.nombre}"
 									itemValue="#{prod.idProducto}" />
+								<!-- Valida que no quede en "Seleccionar..." (valor 0) -->
+								<f:validateLongRange minimum="1"
+									message="Debe seleccionar un producto válido" />
 							</h:selectOneMenu>
 							<h:message for="productoBuscar" styleClass="mensaje-error" />
 						</div>
@@ -50,38 +54,62 @@
 				<!-- Ajuste manual -->
 				<div class="card">
 					<div class="card-titulo">Ajuste manual de stock</div>
-					<h:form>
+					<h:form id="formAjuste">
 						<div class="form-grid">
 
+							<!-- ID Inventario: solo números enteros positivos -->
 							<div class="form-campo form-grid-full">
 								<label class="form-label">ID Inventario</label>
 								<h:inputText id="idInventarioAjuste"
 									value="#{inventarioBean.idInventarioAjuste}"
 									styleClass="form-input" required="true"
 									requiredMessage="El ID de inventario es obligatorio"
-									placeholder="ID de la combinación">
+									placeholder="ID de la combinación"
+									onkeypress="return /[0-9]/.test(event.key)"
+									onpaste="return false">
 									<f:validateLongRange minimum="1"
-										message="Debe ingresar un ID válido" />
+										message="El ID debe ser un número entero mayor a 0" />
 								</h:inputText>
 								<h:message for="idInventarioAjuste" styleClass="mensaje-error" />
 							</div>
 
+							<!-- Cantidad ajustada: entero, no cero, permite negativos por diseño del sistema -->
 							<div class="form-campo form-grid-full">
 								<label class="form-label">Cantidad ajustada</label>
 								<h:inputText id="cantidadAjuste"
 									value="#{inventarioBean.ajuste.cantidadAjustada}"
 									styleClass="form-input" required="true"
-									requiredMessage="La cantidad es obligatoria"
-									placeholder="Positivo suma, negativo resta" />
+									requiredMessage="La cantidad ajustada es obligatoria"
+									placeholder="Positivo suma, negativo resta"
+									onkeypress="return /[-0-9]/.test(event.key) &amp;&amp; !(event.key==='-' &amp;&amp; this.value.length>0)"
+									onpaste="return false">
+									<!-- Permite negativos (resta stock) y positivos (suma stock), pero no cero -->
+									<f:validateLongRange minimum="-99999" maximum="99999"
+										message="La cantidad debe ser un número entero distinto de cero entre -99999 y 99999" />
+								</h:inputText>
 								<h:message for="cantidadAjuste" styleClass="mensaje-error" />
+								<small class="form-hint"
+									style="color: #9C7B6B; font-size: 11px;"> Use valor
+									negativo para restar, positivo para sumar. No puede quedar
+									stock negativo ni menor al reservado. </small>
 							</div>
 
+							<!-- Motivo: texto obligatorio, sin números ni caracteres especiales raros, entre 5 y 200 chars -->
 							<div class="form-campo form-grid-full">
 								<label class="form-label">Motivo</label>
 								<h:inputText id="motivoAjuste"
 									value="#{inventarioBean.ajuste.motivo}" styleClass="form-input"
-									required="true" requiredMessage="El motivo es obligatorio">
-									<f:validateLength minimum="5" maximum="200" />
+									required="true"
+									requiredMessage="El motivo del ajuste es obligatorio"
+									placeholder="Describa el motivo del ajuste"
+									onkeypress="return /[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9 .,;:()\-]/.test(event.key)"
+									onpaste="return false">
+									<f:validateLength minimum="5" maximum="200"
+										message="El motivo debe tener entre 5 y 200 caracteres" />
+									<!-- Regex: letras, espacios, puntuación básica; sin símbolos raros -->
+									<f:validateRegex
+										pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9 .,;:()\-]{5,200}$"
+										message="El motivo contiene caracteres no permitidos" />
 								</h:inputText>
 								<h:message for="motivoAjuste" styleClass="mensaje-error" />
 							</div>

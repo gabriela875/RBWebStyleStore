@@ -10,6 +10,8 @@ import service.VentaService;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
+import jakarta.persistence.EntityManager;
+import util.JpaUtil;
 
 @Named
 @SessionScoped
@@ -31,12 +33,14 @@ public class VentaBean implements Serializable {
 	private Cliente cliente = new Cliente();
 	private Pago pago = new Pago();
 	private List<DetalleVenta> detallesActivos;
+	private List<MetodoPago> metodosPago;
 	private String documentoBusqueda;
 	private String mensajeExito;
 	private String mensajeError;
 	private String motivoAnulacion; // campo nuevo
 	private int idInventarioSeleccionado;
 	private int cantidadAgregar;
+	private int idMetodoPagoSeleccionado;
 
 	// Iniciar una nueva venta
 	public void iniciarVenta() {
@@ -104,9 +108,24 @@ public class VentaBean implements Serializable {
 	public void registrarPago() {
 		mensajeExito = null;
 		mensajeError = null;
+
+		MetodoPago metodo = null;
+		for (MetodoPago mp : getMetodosPago()) {
+			if (mp.getIdMetodoPago() == idMetodoPagoSeleccionado) {
+				metodo = mp;
+				break;
+			}
+		}
+		if (metodo == null) {
+			mensajeError = "Debe seleccionar un método de pago";
+			return;
+		}
+		pago.setMetodoPago(metodo);
+
 		try {
 			ventaService.registrarPago(ventaActiva.getIdVenta(), pago);
 			pago = new Pago();
+			idMetodoPagoSeleccionado = 0;
 			mensajeExito = "Pago registrado correctamente";
 		} catch (Exception e) {
 			mensajeError = e.getMessage();
@@ -205,8 +224,16 @@ public class VentaBean implements Serializable {
 		return ventaService.listarPagos(ventaActiva.getIdVenta());
 	}
 
-	public Pago.MetodoPago[] getMetodosPago() {
-		return Pago.MetodoPago.values();
+	public List<MetodoPago> getMetodosPago() {
+		if (metodosPago == null) {
+			EntityManager em = JpaUtil.getEntityManagerFactory().createEntityManager();
+			try {
+				metodosPago = em.createQuery("SELECT m FROM MetodoPago m", MetodoPago.class).getResultList();
+			} finally {
+				em.close();
+			}
+		}
+		return metodosPago;
 	}
 
 	// Getters y setters
@@ -268,5 +295,13 @@ public class VentaBean implements Serializable {
 
 	public void setCantidadAgregar(int cantidad) {
 		this.cantidadAgregar = cantidad;
+	}
+
+	public int getIdMetodoPagoSeleccionado() {
+		return idMetodoPagoSeleccionado;
+	}
+
+	public void setIdMetodoPagoSeleccionado(int id) {
+		this.idMetodoPagoSeleccionado = id;
 	}
 }

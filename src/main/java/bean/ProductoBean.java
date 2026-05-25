@@ -34,17 +34,20 @@ public class ProductoBean implements Serializable {
 	private List<Inventario> listaInventario;
 	private List<Categoria> listaCategorias;
 	private List<Proveedor> listaProveedores;
+	private List<Genero> listaGeneros;
+	private List<TipoDescuento> listaTiposDescuento;
+
 	private String mensajeExito;
 	private String mensajeError;
 
-	// Campos para selectOneMenu con objetos complejos
 	private int idCategoriaSeleccionada;
 	private int idProveedorSeleccionado;
+	private int idGeneroSeleccionado;
+	private int idTipoDescuentoSeleccionado;
 	private int idProductoDescuento;
 	private int idProductoActualizar;
 	private String fechaInicioDescuento;
 	private String fechaFinDescuento;
-	// Campo para actualizar precio desde la tabla
 	private BigDecimal nuevoPrecio;
 
 	// Registrar nuevo producto
@@ -57,7 +60,6 @@ public class ProductoBean implements Serializable {
 			return null;
 		}
 
-		// Buscar categoria seleccionada
 		Categoria categoria = null;
 		for (Categoria c : getListaCategorias()) {
 			if (c.getIdCategoria() == idCategoriaSeleccionada) {
@@ -65,12 +67,17 @@ public class ProductoBean implements Serializable {
 				break;
 			}
 		}
-
-		// Buscar proveedor seleccionado
 		Proveedor proveedor = null;
 		for (Proveedor p : getListaProveedores()) {
 			if (p.getIdProveedor() == idProveedorSeleccionado) {
 				proveedor = p;
+				break;
+			}
+		}
+		Genero genero = null;
+		for (Genero g : getListaGeneros()) {
+			if (g.getIdGenero() == idGeneroSeleccionado) {
+				genero = g;
 				break;
 			}
 		}
@@ -83,9 +90,14 @@ public class ProductoBean implements Serializable {
 			mensajeError = "Debe seleccionar un proveedor";
 			return null;
 		}
+		if (genero == null) {
+			mensajeError = "Debe seleccionar un género";
+			return null;
+		}
 
 		producto.setCategoria(categoria);
 		producto.setProveedor(proveedor);
+		producto.setGenero(genero);
 
 		try {
 			productoService.registrar(producto);
@@ -93,6 +105,7 @@ public class ProductoBean implements Serializable {
 			producto = new Producto();
 			idCategoriaSeleccionada = 0;
 			idProveedorSeleccionado = 0;
+			idGeneroSeleccionado = 0;
 			listaProductos = null;
 		} catch (Exception e) {
 			mensajeError = e.getMessage();
@@ -103,12 +116,10 @@ public class ProductoBean implements Serializable {
 	public String eliminar(int idProducto) {
 		mensajeExito = null;
 		mensajeError = null;
-
 		if (!sessionBean.isAdmin()) {
 			mensajeError = "Solo el Administrador puede eliminar productos";
 			return null;
 		}
-
 		try {
 			productoService.eliminar(idProducto);
 			mensajeExito = "Producto eliminado correctamente";
@@ -119,21 +130,17 @@ public class ProductoBean implements Serializable {
 		return null;
 	}
 
-	// Actualizar precio — lee el precio del campo nuevoPrecio del bean
 	public String actualizarPrecio(int idProducto) {
 		mensajeExito = null;
 		mensajeError = null;
-
 		if (!sessionBean.isAdmin()) {
 			mensajeError = "Solo el Administrador puede modificar precios";
 			return null;
 		}
-
 		if (nuevoPrecio == null || nuevoPrecio.compareTo(BigDecimal.ZERO) <= 0) {
 			mensajeError = "El precio debe ser mayor a cero";
 			return null;
 		}
-
 		try {
 			productoService.actualizarPrecio(idProducto, nuevoPrecio);
 			mensajeExito = "Precio actualizado correctamente";
@@ -145,16 +152,13 @@ public class ProductoBean implements Serializable {
 		return null;
 	}
 
-	// Descontinuar producto
 	public String descontinuar(int idProducto) {
 		mensajeExito = null;
 		mensajeError = null;
-
 		if (!sessionBean.isAdmin() && !sessionBean.isBodeguero()) {
 			mensajeError = "No tiene permisos para descontinuar productos";
 			return null;
 		}
-
 		try {
 			productoService.descontinuar(idProducto);
 			mensajeExito = "Producto marcado como descontinuado";
@@ -165,10 +169,26 @@ public class ProductoBean implements Serializable {
 		return null;
 	}
 
+	public String marcarAgotado(int idProducto) {
+		mensajeExito = null;
+		mensajeError = null;
+		if (!sessionBean.isAdmin() && !sessionBean.isBodeguero()) {
+			mensajeError = "No tiene permisos para marcar productos como agotados";
+			return null;
+		}
+		try {
+			productoService.marcarAgotado(idProducto);
+			mensajeExito = "Producto marcado como agotado";
+			listaProductos = null;
+		} catch (Exception e) {
+			mensajeError = e.getMessage();
+		}
+		return null;
+	}
+
 	public String editar() {
 		mensajeExito = null;
 		mensajeError = null;
-
 		if (!sessionBean.isAdmin()) {
 			mensajeError = "Solo el Administrador puede editar productos";
 			return null;
@@ -181,11 +201,17 @@ public class ProductoBean implements Serializable {
 				break;
 			}
 		}
-
 		Proveedor proveedor = null;
 		for (Proveedor p : getListaProveedores()) {
 			if (p.getIdProveedor() == idProveedorSeleccionado) {
 				proveedor = p;
+				break;
+			}
+		}
+		Genero genero = null;
+		for (Genero g : getListaGeneros()) {
+			if (g.getIdGenero() == idGeneroSeleccionado) {
+				genero = g;
 				break;
 			}
 		}
@@ -198,9 +224,14 @@ public class ProductoBean implements Serializable {
 			mensajeError = "Debe seleccionar un proveedor";
 			return null;
 		}
+		if (genero == null) {
+			mensajeError = "Debe seleccionar un género";
+			return null;
+		}
 
 		producto.setCategoria(categoria);
 		producto.setProveedor(proveedor);
+		producto.setGenero(genero);
 
 		try {
 			productoService.editar(producto);
@@ -212,26 +243,6 @@ public class ProductoBean implements Serializable {
 		return null;
 	}
 
-	public String marcarAgotado(int idProducto) {
-		mensajeExito = null;
-		mensajeError = null;
-
-		if (!sessionBean.isAdmin() && !sessionBean.isBodeguero()) {
-			mensajeError = "No tiene permisos para marcar productos como agotados";
-			return null;
-		}
-
-		try {
-			productoService.marcarAgotado(idProducto);
-			mensajeExito = "Producto marcado como agotado";
-			listaProductos = null;
-		} catch (Exception e) {
-			mensajeError = e.getMessage();
-		}
-		return null;
-	}
-
-	// Registrar descuento — el idProducto viene del selector idProductoDescuento
 	public String registrarDescuento(int idProducto) {
 		mensajeExito = null;
 		mensajeError = null;
@@ -240,9 +251,21 @@ public class ProductoBean implements Serializable {
 			mensajeError = "Solo el Administrador puede registrar descuentos";
 			return null;
 		}
-
 		if (idProducto == 0) {
 			mensajeError = "Debe seleccionar un producto";
+			return null;
+		}
+
+		// Buscar tipo de descuento seleccionado
+		TipoDescuento tipoDescuento = null;
+		for (TipoDescuento td : getListaTiposDescuento()) {
+			if (td.getIdTipoDesc() == idTipoDescuentoSeleccionado) {
+				tipoDescuento = td;
+				break;
+			}
+		}
+		if (tipoDescuento == null) {
+			mensajeError = "Debe seleccionar el tipo de descuento";
 			return null;
 		}
 
@@ -257,21 +280,21 @@ public class ProductoBean implements Serializable {
 		try {
 			Producto p = productoService.buscarPorId(idProducto);
 			descuento.setProducto(p);
+			descuento.setTipoDescuento(tipoDescuento);
 			productoService.registrarDescuento(descuento);
 			mensajeExito = "Descuento registrado correctamente";
 			descuento = new Descuento();
 			idProductoDescuento = 0;
+			idTipoDescuentoSeleccionado = 0;
 		} catch (Exception e) {
 			mensajeError = e.getMessage();
 		}
 		return null;
 	}
 
-	// Desactivar descuento
 	public String desactivarDescuento(int idProducto) {
 		mensajeExito = null;
 		mensajeError = null;
-
 		try {
 			productoService.desactivarDescuento(idProducto);
 			mensajeExito = "Descuento desactivado correctamente";
@@ -281,30 +304,29 @@ public class ProductoBean implements Serializable {
 		return null;
 	}
 
-	// Limpiar formulario
 	public String nuevo() {
 		mensajeExito = null;
 		mensajeError = null;
 		producto = new Producto();
 		idCategoriaSeleccionada = 0;
 		idProveedorSeleccionado = 0;
+		idGeneroSeleccionado = 0;
 		return null;
 	}
 
-	// Cargar producto para ver detalle
 	public String cargarProducto(int idProducto) {
 		producto = productoService.buscarPorId(idProducto);
 		idCategoriaSeleccionada = producto.getCategoria().getIdCategoria();
-	    idProveedorSeleccionado = producto.getProveedor().getIdProveedor();
+		idProveedorSeleccionado = producto.getProveedor().getIdProveedor();
+		idGeneroSeleccionado = producto.getGenero().getIdGenero();
 		listaInventario = inventarioService.listarPorProducto(idProducto);
 		return null;
 	}
 
 	// Listas
 	public List<Producto> getListaProductos() {
-		if (listaProductos == null) {
+		if (listaProductos == null)
 			listaProductos = productoService.listarTodos();
-		}
 		return listaProductos;
 	}
 
@@ -336,6 +358,31 @@ public class ProductoBean implements Serializable {
 		return listaProveedores;
 	}
 
+	public List<Genero> getListaGeneros() {
+		if (listaGeneros == null) {
+			EntityManager em = JpaUtil.getEntityManagerFactory().createEntityManager();
+			try {
+				listaGeneros = em.createQuery("SELECT g FROM Genero g", Genero.class).getResultList();
+			} finally {
+				em.close();
+			}
+		}
+		return listaGeneros;
+	}
+
+	public List<TipoDescuento> getListaTiposDescuento() {
+		if (listaTiposDescuento == null) {
+			EntityManager em = JpaUtil.getEntityManagerFactory().createEntityManager();
+			try {
+				listaTiposDescuento = em.createQuery("SELECT t FROM TipoDescuento t", TipoDescuento.class)
+						.getResultList();
+			} finally {
+				em.close();
+			}
+		}
+		return listaTiposDescuento;
+	}
+
 	public List<Talla> getListaTallas() {
 		EntityManager em = JpaUtil.getEntityManagerFactory().createEntityManager();
 		try {
@@ -354,41 +401,29 @@ public class ProductoBean implements Serializable {
 		}
 	}
 
-	public Producto.Genero[] getGeneros() {
-		return Producto.Genero.values();
-	}
-
-	public Producto.EstadoProducto[] getEstados() {
-		return Producto.EstadoProducto.values();
-	}
-
-	public Descuento.TipoDescuento[] getTiposDescuento() {
-		return Descuento.TipoDescuento.values();
-	}
-
 	// Getters y setters
 	public Producto getProducto() {
 		return producto;
 	}
 
-	public void setProducto(Producto producto) {
-		this.producto = producto;
+	public void setProducto(Producto p) {
+		this.producto = p;
 	}
 
 	public Descuento getDescuento() {
 		return descuento;
 	}
 
-	public void setDescuento(Descuento descuento) {
-		this.descuento = descuento;
+	public void setDescuento(Descuento d) {
+		this.descuento = d;
 	}
 
 	public Inventario getInventario() {
 		return inventario;
 	}
 
-	public void setInventario(Inventario inventario) {
-		this.inventario = inventario;
+	public void setInventario(Inventario i) {
+		this.inventario = i;
 	}
 
 	public List<Inventario> getListaInventario() {
@@ -419,6 +454,22 @@ public class ProductoBean implements Serializable {
 		this.idProveedorSeleccionado = id;
 	}
 
+	public int getIdGeneroSeleccionado() {
+		return idGeneroSeleccionado;
+	}
+
+	public void setIdGeneroSeleccionado(int id) {
+		this.idGeneroSeleccionado = id;
+	}
+
+	public int getIdTipoDescuentoSeleccionado() {
+		return idTipoDescuentoSeleccionado;
+	}
+
+	public void setIdTipoDescuentoSeleccionado(int id) {
+		this.idTipoDescuentoSeleccionado = id;
+	}
+
 	public int getIdProductoDescuento() {
 		return idProductoDescuento;
 	}
@@ -427,20 +478,20 @@ public class ProductoBean implements Serializable {
 		this.idProductoDescuento = id;
 	}
 
-	public BigDecimal getNuevoPrecio() {
-		return nuevoPrecio;
-	}
-
-	public void setNuevoPrecio(BigDecimal nuevoPrecio) {
-		this.nuevoPrecio = nuevoPrecio;
-	}
-
 	public int getIdProductoActualizar() {
 		return idProductoActualizar;
 	}
 
 	public void setIdProductoActualizar(int id) {
 		this.idProductoActualizar = id;
+	}
+
+	public BigDecimal getNuevoPrecio() {
+		return nuevoPrecio;
+	}
+
+	public void setNuevoPrecio(BigDecimal p) {
+		this.nuevoPrecio = p;
 	}
 
 	public String getFechaInicioDescuento() {

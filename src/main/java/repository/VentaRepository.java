@@ -91,8 +91,9 @@ public class VentaRepository {
 	public List<Venta> listarPendientes() {
 		EntityManager em = emf.createEntityManager();
 		try {
-			return em.createQuery("SELECT v FROM Venta v WHERE v.estado = model.Venta$EstadoVenta.pendiente "
-					+ "ORDER BY v.fechaHora ASC", Venta.class).getResultList();
+			return em.createQuery(
+					"SELECT v FROM Venta v WHERE v.estadoVenta.nombre = :estado " + "ORDER BY v.fechaHora ASC",
+					Venta.class).setParameter("estado", "Pendiente").getResultList();
 		} finally {
 			em.close();
 		}
@@ -103,9 +104,9 @@ public class VentaRepository {
 		try {
 			LocalDateTime limite = LocalDateTime.now().minusHours(24);
 			return em
-					.createQuery("SELECT v FROM Venta v WHERE v.estado = model.Venta$EstadoVenta.pendiente "
+					.createQuery("SELECT v FROM Venta v WHERE v.estadoVenta.nombre = :estado "
 							+ "AND v.fechaHora <= :limite ORDER BY v.fechaHora ASC", Venta.class)
-					.setParameter("limite", limite).getResultList();
+					.setParameter("estado", "Pendiente").setParameter("limite", limite).getResultList();
 		} finally {
 			em.close();
 		}

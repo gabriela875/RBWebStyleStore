@@ -2,10 +2,7 @@ package service;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import model.DetalleEntrada;
-import model.EntradaMercancia;
-import model.Inventario;
-import model.Producto;
+import model.*;
 import repository.AbastecimientoRepository;
 import repository.InventarioRepository;
 import java.time.LocalDateTime;
@@ -26,7 +23,6 @@ public class AbastecimientoService {
 	@Inject
 	private InventarioService inventarioService;
 
-	// Registrar una entrada de mercancia con sus detalles
 	public void registrarEntrada(EntradaMercancia entrada, List<DetalleEntrada> detalles) {
 		entrada.setFecha(LocalDateTime.now());
 
@@ -34,7 +30,7 @@ public class AbastecimientoService {
 			Producto producto = productoService.buscarPorId(detalle.getInventario().getProducto().getIdProducto());
 
 			// No se puede ingresar mercancia de un producto descontinuado
-			if (producto.getEstado() == Producto.EstadoProducto.descontinuado) {
+			if (producto.getEstadoProducto().getNombre().equals("Descontinuado")) {
 				throw new IllegalStateException(
 						"No se puede ingresar mercancía de un producto descontinuado: " + producto.getNombre());
 			}
@@ -63,14 +59,11 @@ public class AbastecimientoService {
 				inventario.setStock(0);
 				inventario.setStockReservado(0);
 				inventarioRepo.guardarConMerge(inventario);
-
-				// Reobtener de BD para tener el ID generado
 				inventario = inventarioRepo.buscarPorProductoTallaColor(
 						detalle.getInventario().getProducto().getIdProducto(),
 						detalle.getInventario().getTalla().getIdTalla(),
 						detalle.getInventario().getColor().getIdColor());
 			}
-
 			detalle.setInventario(inventario);
 		}
 
@@ -83,17 +76,14 @@ public class AbastecimientoService {
 		}
 	}
 
-	// Listar todas las entradas de mercancia
 	public List<EntradaMercancia> listarEntradas() {
 		return abastecimientoRepo.listarTodas();
 	}
 
-	// Listar entradas por proveedor
 	public List<EntradaMercancia> listarEntradasPorProveedor(int idProveedor) {
 		return abastecimientoRepo.listarPorProveedor(idProveedor);
 	}
 
-	// Listar detalles de una entrada especifica
 	public List<DetalleEntrada> listarDetalles(int idEntrada) {
 		return abastecimientoRepo.listarDetallesPorEntrada(idEntrada);
 	}

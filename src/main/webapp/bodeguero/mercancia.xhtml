@@ -21,7 +21,6 @@
 
 		<div class="panel-grid">
 
-			<!-- Formulario -->
 			<div>
 				<div class="card">
 					<div class="card-titulo">Datos de la entrada</div>
@@ -32,11 +31,14 @@
 							<h:selectOneMenu id="proveedor"
 								value="#{abastecimientoBean.idProveedorSeleccionado}"
 								styleClass="form-select" required="true"
-								requiredMessage="El proveedor es obligatorio">
-								<f:selectItem itemLabel="Seleccionar..." itemValue="0" />
+								requiredMessage="Debe seleccionar un proveedor"
+								validatorMessage="Debe seleccionar un proveedor válido">
+								<f:selectItem itemLabel="Seleccionar una opción..."
+									itemValue="0" />
 								<f:selectItems value="#{abastecimientoBean.listaProveedores}"
 									var="prov" itemLabel="#{prov.nombre}"
 									itemValue="#{prov.idProveedor}" />
+								<f:validateLongRange minimum="1" />
 							</h:selectOneMenu>
 							<h:message for="proveedor" styleClass="mensaje-error" />
 						</div>
@@ -52,11 +54,14 @@
 								<h:selectOneMenu id="productoDetalle"
 									value="#{abastecimientoBean.idProductoDetalle}"
 									styleClass="form-select" required="true"
-									requiredMessage="Debe seleccionar un producto">
-									<f:selectItem itemLabel="Seleccionar..." itemValue="0" />
+									requiredMessage="Debe seleccionar un producto"
+									validatorMessage="Debe seleccionar un producto válido">
+									<f:selectItem itemLabel="Seleccionar una opción..."
+										itemValue="0" />
 									<f:selectItems value="#{abastecimientoBean.listaProductos}"
 										var="prod" itemLabel="#{prod.nombre}"
 										itemValue="#{prod.idProducto}" />
+									<f:validateLongRange minimum="1" />
 								</h:selectOneMenu>
 								<h:message for="productoDetalle" styleClass="mensaje-error" />
 							</div>
@@ -66,10 +71,13 @@
 								<h:selectOneMenu id="tallaDetalle"
 									value="#{abastecimientoBean.idTallaDetalle}"
 									styleClass="form-select" required="true"
-									requiredMessage="Debe seleccionar una talla">
-									<f:selectItem itemLabel="Seleccionar..." itemValue="0" />
+									requiredMessage="Debe seleccionar una talla"
+									validatorMessage="Debe seleccionar una talla válida">
+									<f:selectItem itemLabel="Seleccionar una opción..."
+										itemValue="0" />
 									<f:selectItems value="#{abastecimientoBean.listaTallas}"
 										var="t" itemLabel="#{t.nombre}" itemValue="#{t.idTalla}" />
+									<f:validateLongRange minimum="1" />
 								</h:selectOneMenu>
 								<h:message for="tallaDetalle" styleClass="mensaje-error" />
 							</div>
@@ -79,10 +87,13 @@
 								<h:selectOneMenu id="colorDetalle"
 									value="#{abastecimientoBean.idColorDetalle}"
 									styleClass="form-select" required="true"
-									requiredMessage="Debe seleccionar un color">
-									<f:selectItem itemLabel="Seleccionar..." itemValue="0" />
+									requiredMessage="Debe seleccionar un color"
+									validatorMessage="Debe seleccionar un color válido">
+									<f:selectItem itemLabel="Seleccionar una opción..."
+										itemValue="0" />
 									<f:selectItems value="#{abastecimientoBean.listaColores}"
 										var="c" itemLabel="#{c.nombre}" itemValue="#{c.idColor}" />
+									<f:validateLongRange minimum="1" />
 								</h:selectOneMenu>
 								<h:message for="colorDetalle" styleClass="mensaje-error" />
 							</div>
@@ -93,9 +104,10 @@
 									value="#{abastecimientoBean.detalleActual.cantidad}"
 									styleClass="form-input" required="true"
 									requiredMessage="La cantidad es obligatoria"
-									placeholder="Unidades">
-									<f:validateLongRange minimum="1"
-										message="La cantidad debe ser mayor a cero" />
+									converterMessage="La cantidad debe ser un número entero"
+									validatorMessage="La cantidad debe ser mayor a cero"
+									placeholder="Ej: 10">
+									<f:validateLongRange minimum="1" maximum="9999" />
 								</h:inputText>
 								<h:message for="cantidadDetalle" styleClass="mensaje-error" />
 							</div>
@@ -106,9 +118,10 @@
 									value="#{abastecimientoBean.detalleActual.precioUnitario}"
 									styleClass="form-input" required="true"
 									requiredMessage="El precio unitario es obligatorio"
-									placeholder="Precio">
-									<f:validateDoubleRange minimum="0.01"
-										message="El precio debe ser mayor a cero" />
+									converterMessage="El precio debe ser un número válido (Ej: 25000)"
+									validatorMessage="El precio debe ser mayor a cero"
+									placeholder="Ej: 25000">
+									<f:validateDoubleRange minimum="0.01" maximum="99999999" />
 								</h:inputText>
 								<h:message for="precioDetalle" styleClass="mensaje-error" />
 							</div>
@@ -126,7 +139,8 @@
 						<div class="btn-grupo">
 							<h:commandButton value="Registrar entrada completa"
 								action="#{abastecimientoBean.registrarEntrada}"
-								styleClass="btn-primario" />
+								styleClass="btn-primario"
+								onclick="return confirm('¿Confirma el registro de esta entrada de mercancía?')" />
 						</div>
 
 					</h:form>
@@ -165,7 +179,8 @@
 										<td><h:form>
 												<h:commandButton value="Quitar"
 													action="#{abastecimientoBean.quitarDetalle(st.index)}"
-													styleClass="btn-tabla-peligro" />
+													styleClass="btn-tabla-peligro"
+													onclick="return confirm('¿Quitar este producto de la entrada?')" />
 											</h:form></td>
 									</tr>
 								</ui:repeat>

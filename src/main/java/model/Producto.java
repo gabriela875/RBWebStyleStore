@@ -26,18 +26,17 @@ public class Producto {
 	private String marca;
 
 	@NotNull(message = "El precio base es obligatorio")
-	@DecimalMin(value = "0.01", message = "El precio debe ser mayor a cero")
 	@Column(name = "Precio_base", nullable = false, precision = 12, scale = 2)
 	private BigDecimal precioBase;
 
+	@ManyToOne
+	@JoinColumn(name = "id_Estado_Prod", nullable = false)
 	@NotNull(message = "El estado es obligatorio")
-	@Enumerated(EnumType.STRING)
-	@Column(name = "Estado", nullable = false)
-	private EstadoProducto estado;
+	private EstadoProducto estadoProducto;
 
+	@ManyToOne
+	@JoinColumn(name = "id_Genero", nullable = false)
 	@NotNull(message = "El género es obligatorio")
-	@Enumerated(EnumType.STRING)
-	@Column(name = "Genero", nullable = false)
 	private Genero genero;
 
 	@ManyToOne
@@ -50,14 +49,6 @@ public class Producto {
 	@NotNull(message = "El proveedor es obligatorio")
 	private Proveedor proveedor;
 
-	public enum EstadoProducto {
-		disponible, agotado, descontinuado
-	}
-
-	public enum Genero {
-		hombre, mujer, unisex, nino
-	}
-
 	public Producto() {
 	}
 
@@ -65,8 +56,8 @@ public class Producto {
 		return idProducto;
 	}
 
-	public void setIdProducto(int idProducto) {
-		this.idProducto = idProducto;
+	public void setIdProducto(int id) {
+		this.idProducto = id;
 	}
 
 	public String getCodigo() {
@@ -97,16 +88,16 @@ public class Producto {
 		return precioBase;
 	}
 
-	public void setPrecioBase(BigDecimal precioBase) {
-		this.precioBase = precioBase;
+	public void setPrecioBase(BigDecimal precio) {
+		this.precioBase = precio;
 	}
 
-	public EstadoProducto getEstado() {
-		return estado;
+	public EstadoProducto getEstadoProducto() {
+		return estadoProducto;
 	}
 
-	public void setEstado(EstadoProducto estado) {
-		this.estado = estado;
+	public void setEstadoProducto(EstadoProducto estado) {
+		this.estadoProducto = estado;
 	}
 
 	public Genero getGenero() {

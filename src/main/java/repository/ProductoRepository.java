@@ -89,8 +89,20 @@ public class ProductoRepository {
 	public List<Producto> listarDisponibles() {
 		EntityManager em = emf.createEntityManager();
 		try {
-			return em.createQuery("SELECT p FROM Producto p WHERE p.estado = model.Producto$EstadoProducto.disponible "
-					+ "ORDER BY p.nombre", Producto.class).getResultList();
+			return em.createQuery(
+					"SELECT p FROM Producto p WHERE p.estadoProducto.nombre = :estado " + "ORDER BY p.nombre",
+					Producto.class).setParameter("estado", "Disponible").getResultList();
+		} finally {
+			em.close();
+		}
+	}
+
+	public List<Producto> listarDisponiblesYAgotados() {
+		EntityManager em = emf.createEntityManager();
+		try {
+			return em.createQuery(
+					"SELECT p FROM Producto p WHERE p.estadoProducto.nombre != :estado " + "ORDER BY p.nombre",
+					Producto.class).setParameter("estado", "Descontinuado").getResultList();
 		} finally {
 			em.close();
 		}
@@ -141,11 +153,11 @@ public class ProductoRepository {
 		EntityManager em = emf.createEntityManager();
 		try {
 			return em
-					.createQuery(
-							"SELECT d FROM Descuento d WHERE d.producto.idProducto = :id "
-									+ "AND d.activo = true AND d.fechaInicio <= :hoy AND d.fechaFin >= :hoy",
-							Descuento.class)
-					.setParameter("id", idProducto).setParameter("hoy", LocalDate.now()).getSingleResult();
+					.createQuery("SELECT d FROM Descuento d WHERE d.producto.idProducto = :id "
+							+ "AND d.estadoDescuento.nombre = :estado "
+							+ "AND d.fechaInicio <= :hoy AND d.fechaFin >= :hoy", Descuento.class)
+					.setParameter("id", idProducto).setParameter("estado", "Activo")
+					.setParameter("hoy", LocalDate.now()).getSingleResult();
 		} catch (NoResultException e) {
 			return null;
 		} finally {

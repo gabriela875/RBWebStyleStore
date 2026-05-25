@@ -12,9 +12,9 @@ public class Cliente {
 	@Column(name = "id_Cliente")
 	private int idCliente;
 
+	@ManyToOne
+	@JoinColumn(name = "id_Tipo_Doc", nullable = false)
 	@NotNull(message = "El tipo de documento es obligatorio")
-	@Enumerated(EnumType.STRING)
-	@Column(name = "Tipo_Documento", nullable = false)
 	private TipoDocumento tipoDocumento;
 
 	@NotBlank(message = "El número de documento es obligatorio")
@@ -31,11 +31,7 @@ public class Cliente {
 
 	@Email(message = "El correo debe tener formato válido")
 	@Column(name = "Correo")
-	private String correo; // opcional, puede ser null
-
-	public enum TipoDocumento {//Listado
-		cedula, pasaporte
-	}
+	private String correo;
 
 	public Cliente() {
 	}
@@ -44,24 +40,24 @@ public class Cliente {
 		return idCliente;
 	}
 
-	public void setIdCliente(int idCliente) {
-		this.idCliente = idCliente;
+	public void setIdCliente(int id) {
+		this.idCliente = id;
 	}
 
 	public TipoDocumento getTipoDocumento() {
 		return tipoDocumento;
 	}
 
-	public void setTipoDocumento(TipoDocumento tipoDocumento) {
-		this.tipoDocumento = tipoDocumento;
+	public void setTipoDocumento(TipoDocumento tipo) {
+		this.tipoDocumento = tipo;
 	}
 
 	public String getNumDocumento() {
 		return numDocumento;
 	}
 
-	public void setNumDocumento(String numDocumento) {
-		this.numDocumento = numDocumento;
+	public void setNumDocumento(String num) {
+		this.numDocumento = num;
 	}
 
 	public String getNombre() {

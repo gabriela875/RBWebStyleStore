@@ -184,9 +184,8 @@ public class AbastecimientoBean implements Serializable {
 		if (listaProductos == null) {
 			EntityManager em = JpaUtil.getEntityManagerFactory().createEntityManager();
 			try {
-				listaProductos = em.createQuery(
-						"SELECT p FROM Producto p WHERE p.estado != model.Producto$EstadoProducto.descontinuado",
-						Producto.class).getResultList();
+				listaProductos = em.createQuery("SELECT p FROM Producto p WHERE p.estadoProducto.nombre != :estado",
+						Producto.class).setParameter("estado", "Descontinuado").getResultList();
 			} finally {
 				em.close();
 			}

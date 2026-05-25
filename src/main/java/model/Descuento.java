@@ -14,13 +14,12 @@ public class Descuento {
 	@Column(name = "id_Descuento")
 	private int idDescuento;
 
+	@ManyToOne
+	@JoinColumn(name = "id_Tipo_Desc", nullable = false)
 	@NotNull(message = "El tipo de descuento es obligatorio")
-	@Enumerated(EnumType.STRING)
-	@Column(name = "Tipo", nullable = false)
-	private TipoDescuento tipo;
+	private TipoDescuento tipoDescuento;
 
-	@NotNull(message = "El valor del descuento es obligatorio")
-	@DecimalMin(value = "0.01", message = "El valor debe ser mayor a cero")
+	@NotNull(message = "El valor es obligatorio")
 	@Column(name = "Valor", nullable = false, precision = 12, scale = 2)
 	private BigDecimal valor;
 
@@ -32,17 +31,15 @@ public class Descuento {
 	@Column(name = "Fecha_fin", nullable = false)
 	private LocalDate fechaFin;
 
-	@Column(name = "Activo", nullable = false)
-	private boolean activo;
-
 	@ManyToOne
 	@JoinColumn(name = "id_Producto", nullable = false)
 	@NotNull(message = "El producto es obligatorio")
 	private Producto producto;
 
-	public enum TipoDescuento {
-		porcentaje, valor_fijo
-	}
+	@ManyToOne
+	@JoinColumn(name = "id_Estado_Desc", nullable = false)
+	@NotNull(message = "El estado del descuento es obligatorio")
+	private EstadoDescuento estadoDescuento;
 
 	public Descuento() {
 	}
@@ -51,16 +48,16 @@ public class Descuento {
 		return idDescuento;
 	}
 
-	public void setIdDescuento(int idDescuento) {
-		this.idDescuento = idDescuento;
+	public void setIdDescuento(int id) {
+		this.idDescuento = id;
 	}
 
-	public TipoDescuento getTipo() {
-		return tipo;
+	public TipoDescuento getTipoDescuento() {
+		return tipoDescuento;
 	}
 
-	public void setTipo(TipoDescuento tipo) {
-		this.tipo = tipo;
+	public void setTipoDescuento(TipoDescuento tipo) {
+		this.tipoDescuento = tipo;
 	}
 
 	public BigDecimal getValor() {
@@ -75,24 +72,16 @@ public class Descuento {
 		return fechaInicio;
 	}
 
-	public void setFechaInicio(LocalDate fechaInicio) {
-		this.fechaInicio = fechaInicio;
+	public void setFechaInicio(LocalDate fecha) {
+		this.fechaInicio = fecha;
 	}
 
 	public LocalDate getFechaFin() {
 		return fechaFin;
 	}
 
-	public void setFechaFin(LocalDate fechaFin) {
-		this.fechaFin = fechaFin;
-	}
-
-	public boolean isActivo() {
-		return activo;
-	}
-
-	public void setActivo(boolean activo) {
-		this.activo = activo;
+	public void setFechaFin(LocalDate fecha) {
+		this.fechaFin = fecha;
 	}
 
 	public Producto getProducto() {
@@ -101,5 +90,13 @@ public class Descuento {
 
 	public void setProducto(Producto producto) {
 		this.producto = producto;
+	}
+
+	public EstadoDescuento getEstadoDescuento() {
+		return estadoDescuento;
+	}
+
+	public void setEstadoDescuento(EstadoDescuento estado) {
+		this.estadoDescuento = estado;
 	}
 }

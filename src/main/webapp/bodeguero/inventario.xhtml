@@ -30,11 +30,13 @@
 						<h:selectOneMenu id="productoBuscar"
 							value="#{inventarioBean.idProductoFiltro}"
 							styleClass="form-select" required="true"
-							requiredMessage="Debe seleccionar un producto">
-							<f:selectItem itemLabel="Seleccionar..." itemValue="0" />
+							requiredMessage="Debe seleccionar un producto"
+							validatorMessage="Debe seleccionar un producto válido">
+							<f:selectItem itemLabel="Seleccionar una opción..." itemValue="0" />
 							<f:selectItems value="#{inventarioBean.listaProductos}"
 								var="prod" itemLabel="#{prod.nombre}"
 								itemValue="#{prod.idProducto}" />
+							<f:validateLongRange minimum="1" />
 						</h:selectOneMenu>
 						<h:message for="productoBuscar" styleClass="mensaje-error" />
 					</div>
@@ -102,20 +104,22 @@
 							<tr>
 								<td>#{prod.codigo}</td>
 								<td>#{prod.nombre}</td>
-								<td>#{prod.estado}</td>
+								<td>#{prod.estadoProducto.nombre}</td>
 								<td>
 									<div class="acciones">
 										<h:form>
 											<h:commandButton value="Marcar agotado"
-												rendered="#{prod.estado.name() == 'disponible'}"
+												rendered="#{prod.estadoProducto.nombre == 'Disponible'}"
 												action="#{productoBean.marcarAgotado(prod.idProducto)}"
-												styleClass="btn-tabla" />
+												styleClass="btn-tabla"
+												onclick="return confirm('¿Marcar este producto como agotado?')" />
 										</h:form>
 										<h:form>
 											<h:commandButton value="Descontinuar"
-												rendered="#{prod.estado.name() != 'descontinuado'}"
+												rendered="#{prod.estadoProducto.nombre != 'Descontinuado'}"
 												action="#{productoBean.descontinuar(prod.idProducto)}"
-												styleClass="btn-tabla-peligro" />
+												styleClass="btn-tabla-peligro"
+												onclick="return confirm('¿Descontinuar este producto? Esta acción es permanente.')" />
 										</h:form>
 									</div>
 								</td>

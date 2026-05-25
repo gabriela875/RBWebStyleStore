@@ -19,19 +19,21 @@
 			<div class="mensaje-error">#{productoBean.mensajeError}</div>
 		</h:panelGroup>
 
-		<!-- Formulario nuevo producto -->
+		<!-- Formulario nuevo / editar producto -->
 		<div class="card">
 			<div class="card-titulo">#{productoBean.producto.idProducto ==
 				0 ? 'Nuevo producto' : 'Editar producto'}</div>
-			<h:form>
+			<h:form id="formProducto">
 				<div class="form-grid">
 
 					<div class="form-campo">
 						<label class="form-label">Código único</label>
 						<h:inputText id="codigo" value="#{productoBean.producto.codigo}"
 							styleClass="form-input" required="true"
-							requiredMessage="El código es obligatorio">
+							requiredMessage="El código del producto es obligatorio."
+							validatorMessage="El código debe tener entre 1 y 50 caracteres alfanuméricos. No se permiten espacios.">
 							<f:validateLength minimum="1" maximum="50" />
+							<f:validateRegex pattern="^[a-zA-Z0-9\-_]+$" />
 						</h:inputText>
 						<h:message for="codigo" styleClass="mensaje-error" />
 					</div>
@@ -40,8 +42,12 @@
 						<label class="form-label">Nombre</label>
 						<h:inputText id="nombreProducto"
 							value="#{productoBean.producto.nombre}" styleClass="form-input"
-							required="true" requiredMessage="El nombre es obligatorio">
+							required="true"
+							requiredMessage="El nombre del producto es obligatorio."
+							validatorMessage="El nombre debe tener entre 2 y 100 caracteres y no puede contener solo espacios.">
 							<f:validateLength minimum="2" maximum="100" />
+							<f:validateRegex
+								pattern="^(?!\s*$)[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s\.\,\-\(\)]+$" />
 						</h:inputText>
 						<h:message for="nombreProducto" styleClass="mensaje-error" />
 					</div>
@@ -50,8 +56,11 @@
 						<label class="form-label">Marca</label>
 						<h:inputText id="marca" value="#{productoBean.producto.marca}"
 							styleClass="form-input" required="true"
-							requiredMessage="La marca es obligatoria">
-							<f:validateLength minimum="2" maximum="50" />
+							requiredMessage="La marca es obligatoria."
+							validatorMessage="La marca debe tener entre 2 y 100 caracteres.">
+							<f:validateLength minimum="2" maximum="100" />
+							<f:validateRegex
+								pattern="^(?!\s*$)[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s\.\,\-\&amp;]+$" />
 						</h:inputText>
 						<h:message for="marca" styleClass="mensaje-error" />
 					</div>
@@ -61,9 +70,10 @@
 						<h:inputText id="precioBase"
 							value="#{productoBean.producto.precioBase}"
 							styleClass="form-input" required="true"
-							requiredMessage="El precio es obligatorio">
-							<f:validateDoubleRange minimum="0.01"
-								message="El precio debe ser mayor a cero" />
+							requiredMessage="El precio base es obligatorio."
+							validatorMessage="El precio debe ser un valor numérico mayor a cero. No use puntos ni comas.">
+							<f:validateDoubleRange minimum="0.01" maximum="999999999.99"
+								message="El precio debe ser mayor a $0 y no puede superar $999.999.999 COP." />
 						</h:inputText>
 						<h:message for="precioBase" styleClass="mensaje-error" />
 					</div>
@@ -73,8 +83,9 @@
 						<h:selectOneMenu id="categoria"
 							value="#{productoBean.idCategoriaSeleccionada}"
 							styleClass="form-select" required="true"
-							requiredMessage="La categoría es obligatoria">
-							<f:selectItem itemLabel="Seleccionar..." itemValue="0" />
+							requiredMessage="Debe seleccionar una categoría.">
+							<f:selectItem itemLabel="Seleccionar..." itemValue="#{null}"
+								noSelectionOption="true" />
 							<f:selectItems value="#{productoBean.listaCategorias}" var="cat"
 								itemLabel="#{cat.nombre}" itemValue="#{cat.idCategoria}" />
 						</h:selectOneMenu>
@@ -86,8 +97,9 @@
 						<h:selectOneMenu id="proveedor"
 							value="#{productoBean.idProveedorSeleccionado}"
 							styleClass="form-select" required="true"
-							requiredMessage="El proveedor es obligatorio">
-							<f:selectItem itemLabel="Seleccionar..." itemValue="0" />
+							requiredMessage="Debe seleccionar un proveedor.">
+							<f:selectItem itemLabel="Seleccionar..." itemValue="#{null}"
+								noSelectionOption="true" />
 							<f:selectItems value="#{productoBean.listaProveedores}"
 								var="prov" itemLabel="#{prov.nombre}"
 								itemValue="#{prov.idProveedor}" />
@@ -98,11 +110,13 @@
 					<div class="form-campo">
 						<label class="form-label">Género</label>
 						<h:selectOneMenu id="genero"
-							value="#{productoBean.producto.genero}" styleClass="form-select"
-							required="true" requiredMessage="El género es obligatorio">
-							<f:selectItem itemLabel="Seleccionar..." itemValue="#{null}" />
-							<f:selectItems value="#{productoBean.generos}" var="g"
-								itemLabel="#{g}" itemValue="#{g}" />
+							value="#{productoBean.idGeneroSeleccionado}"
+							styleClass="form-select" required="true"
+							requiredMessage="Debe seleccionar un género.">
+							<f:selectItem itemLabel="Seleccionar..." itemValue="#{null}"
+								noSelectionOption="true" />
+							<f:selectItems value="#{productoBean.listaGeneros}" var="g"
+								itemLabel="#{g.nombre}" itemValue="#{g.idGenero}" />
 						</h:selectOneMenu>
 						<h:message for="genero" styleClass="mensaje-error" />
 					</div>
@@ -111,12 +125,19 @@
 
 				<div class="btn-grupo">
 					<h:commandButton value="Registrar"
-						action="#{productoBean.registrar}" styleClass="btn-primario" />
-					<h:commandButton value="Limpiar" action="#{productoBean.nuevo}"
-						styleClass="btn-secundario" immediate="true" />
+						rendered="#{productoBean.producto.idProducto == 0}"
+						action="#{productoBean.registrar}" styleClass="btn-primario">
+						<f:ajax execute="@form" render="@form" />
+					</h:commandButton>
 					<h:commandButton value="Guardar cambios"
 						rendered="#{productoBean.producto.idProducto != 0}"
-						action="#{productoBean.editar}" styleClass="btn-primario" />
+						action="#{productoBean.editar}" styleClass="btn-primario">
+						<f:ajax execute="@form" render="@form" />
+					</h:commandButton>
+					<h:commandButton value="Limpiar" action="#{productoBean.nuevo}"
+						styleClass="btn-secundario" immediate="true">
+						<f:ajax execute="@this" render="formProducto" />
+					</h:commandButton>
 				</div>
 			</h:form>
 		</div>
@@ -144,42 +165,47 @@
 								<td>#{prod.nombre}</td>
 								<td>#{prod.categoria.nombre}</td>
 								<td>$#{prod.precioBase}</td>
-								<td>#{prod.genero}</td>
+								<td>#{prod.genero.nombre}</td>
 								<td><h:panelGroup
-										rendered="#{prod.estado.name() == 'disponible'}">
+										rendered="#{prod.estadoProducto.nombre == 'Disponible'}">
 										<span class="badge badge-disponible">Disponible</span>
-									</h:panelGroup> <h:panelGroup rendered="#{prod.estado.name() == 'agotado'}">
+									</h:panelGroup> <h:panelGroup
+										rendered="#{prod.estadoProducto.nombre == 'Agotado'}">
 										<span class="badge badge-agotado">Agotado</span>
 									</h:panelGroup> <h:panelGroup
-										rendered="#{prod.estado.name() == 'descontinuado'}">
+										rendered="#{prod.estadoProducto.nombre == 'Descontinuado'}">
 										<span class="badge badge-descontinuado">Descontinuado</span>
 									</h:panelGroup></td>
-
 								<td>
 									<div class="acciones">
 										<h:form>
-											<h:commandButton value="Descontinuar"
-												rendered="#{prod.estado.name() != 'descontinuado'}"
-												action="#{productoBean.descontinuar(prod.idProducto)}"
-												styleClass="btn-tabla-peligro" />
-										</h:form>
-										<h:form>
 											<h:commandButton value="Editar"
+												rendered="#{prod.estadoProducto.nombre != 'Descontinuado'}"
 												action="#{productoBean.cargarProducto(prod.idProducto)}"
-												styleClass="btn-tabla" />
-										</h:form>
-										<h:form>
-											<h:commandButton value="Eliminar"
-												rendered="#{prod.estado.name() == 'descontinuado'}"
-												action="#{productoBean.eliminar(prod.idProducto)}"
-												styleClass="btn-tabla-peligro"
-												onclick="return confirm('¿Seguro que desea eliminar este producto?')" />
+												styleClass="btn-tabla">
+												<f:ajax execute="@this" render=":formProducto" />
+											</h:commandButton>
 										</h:form>
 										<h:form>
 											<h:commandButton value="Marcar agotado"
-												rendered="#{prod.estado.name() == 'disponible'}"
+												rendered="#{prod.estadoProducto.nombre == 'Disponible'}"
 												action="#{productoBean.marcarAgotado(prod.idProducto)}"
-												styleClass="btn-tabla" />
+												styleClass="btn-tabla"
+												onclick="return confirm('¿Marcar como agotado el producto #{prod.nombre}? Solo aplica si el stock llegó a cero.');" />
+										</h:form>
+										<h:form>
+											<h:commandButton value="Descontinuar"
+												rendered="#{prod.estadoProducto.nombre != 'Descontinuado'}"
+												action="#{productoBean.descontinuar(prod.idProducto)}"
+												styleClass="btn-tabla-peligro"
+												onclick="return confirm('¿Descontinuar #{prod.nombre}? Esta acción es PERMANENTE. El producto no podrá venderse ni recibir mercancía. Los descuentos activos se eliminarán automáticamente.');" />
+										</h:form>
+										<h:form>
+											<h:commandButton value="Eliminar"
+												rendered="#{prod.estadoProducto.nombre == 'Descontinuado'}"
+												action="#{productoBean.eliminar(prod.idProducto)}"
+												styleClass="btn-tabla-peligro"
+												onclick="return confirm('¿Eliminar definitivamente #{prod.nombre}? Solo es posible si no ha participado en ninguna venta.');" />
 										</h:form>
 									</div>
 								</td>
@@ -189,47 +215,56 @@
 				</table>
 			</div>
 		</div>
-		<!-- Sección separada para actualizar precio -->
+
+		<!-- Actualizar precio -->
 		<div class="card">
 			<div class="card-titulo">Actualizar precio de producto</div>
-			<h:form>
+			<h:form id="formPrecio">
 				<div class="form-grid">
+
 					<div class="form-campo">
 						<label class="form-label">Producto</label>
 						<h:selectOneMenu id="productoActualizar"
 							value="#{productoBean.idProductoActualizar}"
 							styleClass="form-select" required="true"
-							requiredMessage="Debe seleccionar un producto">
-							<f:selectItem itemLabel="Seleccionar..." itemValue="0" />
+							requiredMessage="Debe seleccionar un producto.">
+							<f:selectItem itemLabel="Seleccionar..." itemValue="#{null}"
+								noSelectionOption="true" />
 							<f:selectItems value="#{productoBean.listaProductos}" var="prod"
 								itemLabel="#{prod.nombre} ($#{prod.precioBase})"
 								itemValue="#{prod.idProducto}" />
 						</h:selectOneMenu>
 						<h:message for="productoActualizar" styleClass="mensaje-error" />
 					</div>
+
 					<div class="form-campo">
 						<label class="form-label">Nuevo precio (COP)</label>
 						<h:inputText id="nuevoPrecio" value="#{productoBean.nuevoPrecio}"
 							styleClass="form-input" required="true"
-							requiredMessage="El precio es obligatorio"
-							placeholder="Nuevo precio">
-							<f:validateDoubleRange minimum="0.01"
-								message="El precio debe ser mayor a cero" />
+							requiredMessage="El nuevo precio es obligatorio."
+							validatorMessage="El precio debe ser un valor numérico mayor a cero."
+							placeholder="Ej: 85000">
+							<f:validateDoubleRange minimum="0.01" maximum="999999999.99"
+								message="El precio debe ser mayor a $0 y no puede superar $999.999.999 COP." />
 						</h:inputText>
 						<h:message for="nuevoPrecio" styleClass="mensaje-error" />
 					</div>
+
 				</div>
 				<div class="btn-grupo">
 					<h:commandButton value="Actualizar precio"
 						action="#{productoBean.actualizarPrecio(productoBean.idProductoActualizar)}"
-						styleClass="btn-primario" />
+						styleClass="btn-primario">
+						<f:ajax execute="@form" render="@form" />
+					</h:commandButton>
 				</div>
 			</h:form>
 		</div>
+
 		<!-- Descuentos -->
 		<div class="card">
 			<div class="card-titulo">Registrar descuento</div>
-			<h:form>
+			<h:form id="formDescuento">
 				<div class="form-grid">
 
 					<div class="form-campo">
@@ -237,8 +272,9 @@
 						<h:selectOneMenu id="productoDescuento"
 							value="#{productoBean.idProductoDescuento}"
 							styleClass="form-select" required="true"
-							requiredMessage="Debe seleccionar un producto">
-							<f:selectItem itemLabel="Seleccionar..." itemValue="0" />
+							requiredMessage="Debe seleccionar un producto.">
+							<f:selectItem itemLabel="Seleccionar..." itemValue="#{null}"
+								noSelectionOption="true" />
 							<f:selectItems value="#{productoBean.listaProductos}" var="prod"
 								itemLabel="#{prod.nombre}" itemValue="#{prod.idProducto}" />
 						</h:selectOneMenu>
@@ -248,12 +284,13 @@
 					<div class="form-campo">
 						<label class="form-label">Tipo de descuento</label>
 						<h:selectOneMenu id="tipoDescuento"
-							value="#{productoBean.descuento.tipo}" styleClass="form-select"
-							required="true"
-							requiredMessage="Debe seleccionar el tipo de descuento">
-							<f:selectItem itemLabel="Seleccionar..." itemValue="#{null}" />
-							<f:selectItems value="#{productoBean.tiposDescuento}" var="td"
-								itemLabel="#{td}" itemValue="#{td}" />
+							value="#{productoBean.idTipoDescuentoSeleccionado}"
+							styleClass="form-select" required="true"
+							requiredMessage="Debe seleccionar el tipo de descuento.">
+							<f:selectItem itemLabel="Seleccionar..." itemValue="#{null}"
+								noSelectionOption="true" />
+							<f:selectItems value="#{productoBean.listaTiposDescuento}"
+								var="td" itemLabel="#{td.nombre}" itemValue="#{td.idTipoDesc}" />
 						</h:selectOneMenu>
 						<h:message for="tipoDescuento" styleClass="mensaje-error" />
 					</div>
@@ -262,20 +299,26 @@
 						<label class="form-label">Valor</label>
 						<h:inputText id="valorDescuento"
 							value="#{productoBean.descuento.valor}" styleClass="form-input"
-							required="true" requiredMessage="El valor es obligatorio"
-							placeholder="Monto o porcentaje">
-							<f:validateDoubleRange minimum="0.01"
-								message="El valor del descuento debe ser mayor a cero" />
+							required="true"
+							requiredMessage="El valor del descuento es obligatorio."
+							validatorMessage="El valor debe ser mayor a cero. Para porcentaje use un número entre 1 y 99. Para valor fijo ingrese el monto en COP."
+							placeholder="Ej: 10 (%) o 5000 (COP)">
+							<f:validateDoubleRange minimum="0.01" maximum="99999999.99"
+								message="El valor del descuento debe ser mayor a cero." />
 						</h:inputText>
 						<h:message for="valorDescuento" styleClass="mensaje-error" />
 					</div>
+
 					<div class="form-campo">
 						<label class="form-label">Fecha inicio</label>
 						<h:inputText id="fechaInicio"
 							value="#{productoBean.fechaInicioDescuento}"
 							styleClass="form-input" required="true"
-							requiredMessage="La fecha de inicio es obligatoria"
+							requiredMessage="La fecha de inicio es obligatoria."
+							validatorMessage="La fecha debe tener el formato AAAA-MM-DD (Ej: 2026-06-01)."
 							placeholder="AAAA-MM-DD">
+							<f:validateRegex
+								pattern="^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$" />
 						</h:inputText>
 						<h:message for="fechaInicio" styleClass="mensaje-error" />
 					</div>
@@ -284,8 +327,11 @@
 						<label class="form-label">Fecha fin</label>
 						<h:inputText id="fechaFin"
 							value="#{productoBean.fechaFinDescuento}" styleClass="form-input"
-							required="true" requiredMessage="La fecha de fin es obligatoria"
+							required="true" requiredMessage="La fecha de fin es obligatoria."
+							validatorMessage="La fecha debe tener el formato AAAA-MM-DD (Ej: 2026-12-31)."
 							placeholder="AAAA-MM-DD">
+							<f:validateRegex
+								pattern="^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$" />
 						</h:inputText>
 						<h:message for="fechaFin" styleClass="mensaje-error" />
 					</div>
@@ -295,7 +341,9 @@
 				<div class="btn-grupo">
 					<h:commandButton value="Registrar descuento"
 						action="#{productoBean.registrarDescuento(productoBean.idProductoDescuento)}"
-						styleClass="btn-primario" />
+						styleClass="btn-primario">
+						<f:ajax execute="@form" render="@form" />
+					</h:commandButton>
 				</div>
 			</h:form>
 		</div>

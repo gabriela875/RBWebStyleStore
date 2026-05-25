@@ -20,10 +20,12 @@
 
 		<div class="panel-grid">
 
-			<!-- Formulario -->
+			<!-- Formulario registro / edición -->
 			<div class="card">
-				<div class="card-titulo">Nuevo proveedor</div>
-				<h:form>
+				<div class="card-titulo">#{empty
+					proveedorBean.proveedor.idProveedor ? 'Nuevo proveedor' : 'Editar
+					proveedor'}</div>
+				<h:form id="formProveedor">
 					<div class="form-grid">
 
 						<div class="form-campo form-grid-full">
@@ -31,8 +33,11 @@
 							<h:inputText id="nombreProv"
 								value="#{proveedorBean.proveedor.nombre}"
 								styleClass="form-input" required="true"
-								requiredMessage="El nombre es obligatorio">
+								requiredMessage="El nombre del proveedor es obligatorio."
+								validatorMessage="El nombre debe tener entre 2 y 100 caracteres y no puede contener solo espacios.">
 								<f:validateLength minimum="2" maximum="100" />
+								<f:validateRegex
+									pattern="^(?!\s*$)[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s\.\,\-\&amp;]+$" />
 							</h:inputText>
 							<h:message for="nombreProv" styleClass="mensaje-error" />
 						</div>
@@ -42,8 +47,10 @@
 							<h:inputText id="telefono"
 								value="#{proveedorBean.proveedor.telefono}"
 								styleClass="form-input" required="true"
-								requiredMessage="El teléfono es obligatorio">
-								<f:validateLength minimum="7" maximum="15" />
+								requiredMessage="El teléfono es obligatorio."
+								validatorMessage="El teléfono debe tener entre 7 y 15 dígitos. Puede iniciar con + para indicar código de país.">
+								<f:validateLength minimum="7" maximum="20" />
+								<f:validateRegex pattern="^\+?\d{7,15}$" />
 							</h:inputText>
 							<h:message for="telefono" styleClass="mensaje-error" />
 						</div>
@@ -53,9 +60,11 @@
 							<h:inputText id="correo"
 								value="#{proveedorBean.proveedor.correo}"
 								styleClass="form-input" required="true"
-								requiredMessage="El correo es obligatorio"
-								validatorMessage="El correo debe tener formato válido (ejemplo@dominio.com)">
-								<f:validateRegex pattern="^[^@\s]+@[^@\s]+\.[^@\s]+$" />
+								requiredMessage="El correo es obligatorio."
+								validatorMessage="El correo debe tener formato válido (ejemplo@dominio.com).">
+								<f:validateLength maximum="100" />
+								<f:validateRegex
+									pattern="^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$" />
 							</h:inputText>
 							<h:message for="correo" styleClass="mensaje-error" />
 						</div>
@@ -63,10 +72,15 @@
 					</div>
 
 					<div class="btn-grupo">
-						<h:commandButton value="Registrar"
-							action="#{proveedorBean.registrar}" styleClass="btn-primario" />
+						<h:commandButton
+							value="#{empty proveedorBean.proveedor.idProveedor ? 'Registrar' : 'Actualizar'}"
+							action="#{proveedorBean.registrar}" styleClass="btn-primario">
+							<f:ajax execute="@form" render="@form" />
+						</h:commandButton>
 						<h:commandButton value="Limpiar" action="#{proveedorBean.nuevo}"
-							styleClass="btn-secundario" immediate="true" />
+							styleClass="btn-secundario" immediate="true">
+							<f:ajax execute="@this" render="formProveedor" />
+						</h:commandButton>
 					</div>
 				</h:form>
 			</div>
@@ -90,17 +104,23 @@
 									<td>#{prov.nombre}</td>
 									<td>#{prov.telefono}</td>
 									<td>#{prov.correo}</td>
-									<td><h:form>
-											<h:commandButton value="Cargar"
-												action="#{proveedorBean.cargarProveedor(prov.idProveedor)}"
-												styleClass="btn-tabla" />
-										</h:form></td>
-									<td><h:form>
-											<h:commandButton value="Dar de baja"
-												action="#{proveedorBean.darDeBaja(prov.idProveedor)}"
-												styleClass="btn-tabla-peligro"
-												onclick="return confirm('¿Seguro que desea dar de baja a este proveedor?')" />
-										</h:form></td>
+									<td>
+										<div class="acciones">
+											<h:form>
+												<h:commandButton value="Editar"
+													action="#{proveedorBean.cargarProveedor(prov.idProveedor)}"
+													styleClass="btn-tabla">
+													<f:ajax execute="@this" render=":formProveedor" />
+												</h:commandButton>
+											</h:form>
+											<h:form>
+												<h:commandButton value="Dar de baja"
+													action="#{proveedorBean.darDeBaja(prov.idProveedor)}"
+													styleClass="btn-tabla-peligro"
+													onclick="return confirm('¿Dar de baja a #{prov.nombre}? Esta acción no se puede realizar si tiene productos asociados.');" />
+											</h:form>
+										</div>
+									</td>
 								</tr>
 							</ui:repeat>
 						</tbody>
