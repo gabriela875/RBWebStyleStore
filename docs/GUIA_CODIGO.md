@@ -200,3 +200,60 @@ el estado del empleado (Activar/Desactivar, Desbloquear si está bloqueado, Edit
 
 > Flujo del módulo: `admin/empleados.php` (pantalla) → `api/empleados.php` (recibe la acción) →
 > `funciones/empleados.php` (consulta y reglas) → base de datos.
+
+---
+
+## CRUD de Proveedores — Administrador
+
+### `funciones/proveedores.php`
+Operaciones sobre proveedores (traducidas del `ProveedorService` original):
+- `listarProveedores()` / `buscarProveedor()`: para la tabla y la edición.
+- `registrarProveedor()`: valida **nombre único** y **correo único** (mensajes del original).
+- `editarProveedor()`: valida unicidad contra los demás proveedores.
+- `eliminarProveedor()`: **no permite** eliminar si el proveedor tiene productos asociados.
+
+### `api/proveedores.php`
+Recibe las acciones AJAX (`listar`, `obtener`, `crear`, `editar`, `eliminar`) en JSON. Protegido
+solo para Administrador. Valida en el servidor: nombre obligatorio, teléfono solo números, correo
+con formato válido.
+
+### `admin/proveedores.php`
+Una sola página con el formulario (crear/editar) y la tabla, con botones de **editar** y
+**eliminar** que funcionan sin recargar (fetch). Los mensajes se muestran con notificaciones.
+
+---
+
+## CRUD de Productos — Administrador (y Bodeguero para estados)
+
+### `funciones/productos.php`
+Operaciones sobre productos (traducidas del `ProductoService` original):
+- `listarProductos()` / `buscarProducto()` / `catalogosProducto()`: datos para la tabla y los
+  selectores (categorías, géneros, proveedores, tipos de descuento).
+- `registrarProducto()`: valida **código único** y **precio mayor a cero**; lo crea Disponible.
+- `editarProducto()`: cambia nombre, marca, género, categoría y proveedor (no toca estado ni precio).
+- `actualizarPrecioProducto()`: cambia solo el precio base (debe ser > 0).
+- `marcarAgotado()`: solo si está Disponible (mensajes del original).
+- `descontinuarProducto()`: acción permanente; además **desactiva el descuento activo** del producto
+  (dentro de una transacción).
+- `eliminarProducto()`: solo si está **Descontinuado** y **sin ventas**.
+- `registrarDescuento()` / `buscarDescuentoActivo()`: un solo descuento activo por producto, con
+  fechas válidas y el valor que no puede igualar ni superar el precio (porcentaje < 100).
+
+### `api/productos.php`
+Recibe todas las acciones AJAX en JSON. El **Administrador** puede hacer todo; el **Bodeguero** solo
+`marcar_agotado` y `descontinuar` (el resto se le niega). Valida los datos en el servidor.
+
+### `admin/productos.php`
+Una sola página con varias secciones: formulario de producto (crear/editar), **actualizar precio**,
+**registrar descuento**, y el **catálogo** en tabla. Los botones de cada fila cambian según el
+estado (Marcar agotado si está disponible, Descontinuar, Eliminar si está descontinuado). Todo por
+fetch, con notificaciones.
+
+---
+
+## Validaciones y notificaciones (requisito transversal)
+Cada formulario valida **en el cliente** (con `assets/js/validaciones.js`) antes de enviar, y **en
+el servidor** (con `includes/validaciones.php`) dentro de cada `api/`. Las reglas: solo letras en
+nombres/apellidos, solo números en documento/teléfono, email válido, fechas válidas, campos
+obligatorios y contraseña mínima de 6. Todos los mensajes se muestran con **SweetAlert2** (ventana)
+o **Toastify** (aviso de esquina); **nunca** con `alert()`.
