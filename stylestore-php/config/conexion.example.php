@@ -4,6 +4,7 @@
 
 // Datos de conexion a la base de datos
 define('BD_HOST', 'localhost');
+define('BD_PUERTO', 3306);     // XAMPP usa 3306 por defecto; cambialo si MySQL corre en otro puerto (ej. 3307)
 define('BD_NOMBRE', 'bd_stylestore');
 define('BD_USUARIO', 'root');
 define('BD_CONTRASENA', ''); // XAMPP: vacia por defecto
@@ -26,7 +27,7 @@ define('URL_BASE', 'http://localhost/stylestore-php');
 
 // Devuelve una conexion PDO lista para usar
 function conectar() {
-    $dsn = 'mysql:host=' . BD_HOST . ';dbname=' . BD_NOMBRE . ';charset=utf8mb4';
+    $dsn = 'mysql:host=' . BD_HOST . ';port=' . BD_PUERTO . ';dbname=' . BD_NOMBRE . ';charset=utf8mb4';
     $opciones = [
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,

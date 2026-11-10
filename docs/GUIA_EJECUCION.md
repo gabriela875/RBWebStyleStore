@@ -75,11 +75,16 @@ Cambia `C:\ruta\a\tu\repo` por la ruta real donde clonaste el repositorio. La UR
 3. Ábrela con el Bloc de notas. Para XAMPP, los valores por defecto ya son correctos:
    - Usuario: `root`
    - Contraseña: **vacía** (deja las comillas sin nada: `''`)
+   - Puerto: `3306` (el de MySQL en XAMPP por defecto)
 
    ```php
    define('BD_USUARIO', 'root');
    define('BD_CONTRASENA', '');
+   define('BD_PUERTO', 3306);
    ```
+   > Si tu MySQL de XAMPP corre en **otro puerto** (por ejemplo `3307`, cosa que pasa si ya tenías
+   > otro MySQL instalado), cambia también `BD_PUERTO` a ese número. Puedes ver el puerto real en el
+   > panel de XAMPP, al lado del botón de MySQL.
 4. Guarda el archivo. (Este `conexion.php` no se sube al repositorio por seguridad; por eso existe
    la plantilla `conexion.example.php`.)
 
@@ -155,7 +160,7 @@ Pasa si ya tienes otro MySQL instalado como servicio de Windows.
 - Abre **Servicios** de Windows (`services.msc`), busca un servicio llamado `MySQL` y detenlo.
 - O cambia el puerto en XAMPP: **Config** (de MySQL) → **my.ini**, cambia `port=3306` por `3307`.
   Si lo cambias, pon ese mismo puerto en `conexion.php`:
-  `define('BD_HOST', 'localhost:3307');`
+  `define('BD_PUERTO', 3307);`
 
 ### La página sale en blanco
 Casi siempre es un error de PHP que no se está mostrando. Para verlo:
@@ -178,4 +183,4 @@ Significa que falta activar la extensión de MySQL para PDO.
 - Revisa que en `conexion.php` el nombre de la base sea `bd_stylestore` y el usuario `root` con
   contraseña vacía.
 - Confirma que importaste el SQL (Paso 3) y que la base `bd_stylestore` aparece en phpMyAdmin.
-- Si cambiaste el puerto de MySQL, asegúrate de reflejarlo en `BD_HOST`.
+- Si cambiaste el puerto de MySQL, asegúrate de reflejarlo en `BD_PUERTO`.
