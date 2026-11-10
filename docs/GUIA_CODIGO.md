@@ -100,3 +100,35 @@ confirmaciones, pedir un texto). Nunca se usa `alert()`.
 ### `js/validaciones.js`
 Validaciones **en el cliente** (las mismas que en el servidor) y un ayudante `enviarAccion()` que
 hace las peticiones AJAX con `fetch` a los archivos de `api/` y devuelve el JSON de respuesta.
+
+---
+
+## Login y acceso por rol
+
+### `funciones/auth.php`
+Es el corazón del inicio de sesión. Traduce la lógica del `AuthService` original:
+- `buscarEmpleadoPorUsuario()`: busca al empleado por su usuario y trae también el nombre de su
+  cargo y sus estados (activo/inactivo, bloqueado/desbloqueado) con una consulta preparada.
+- `intentarLogin()`: hace las verificaciones en orden y, si algo falla, lanza el **mismo mensaje**
+  que el proyecto original: usuario no existe, cuenta bloqueada, empleado inactivo, contraseña
+  incorrecta. La contraseña se comprueba con `password_verify`.
+- `registrarIntentoFallido()`: suma 1 al contador; al llegar a **5 intentos** bloquea la cuenta.
+- `desbloquearCuenta()`: reinicia los intentos y quita el bloqueo (solo lo usa el Administrador).
+
+### `index.php` (login)
+La pantalla de inicio de sesión (diseño de dos paneles, igual al original). Cuando se envía el
+formulario, llama a `intentarLogin()`. Si el login es correcto, guarda la sesión y **redirige al
+dashboard del cargo** (Administrador, Vendedor o Bodeguero). Si falla, muestra el mensaje de error.
+También tiene enlaces a registro y a recuperar contraseña, y avisa si la sesión se cerró por
+inactividad.
+
+### `logout.php`
+Cierra la sesión y vuelve al login. Es el destino del botón "Cerrar sesión" del encabezado.
+
+### `admin/dashboard.php`, `vendedor/dashboard.php`, `bodeguero/dashboard.php`
+Son los paneles de inicio de cada rol. Cada uno está **protegido**: si entra alguien sin el cargo
+correcto, se le redirige a su propio dashboard. Muestran un saludo y tarjetas de acceso rápido a los
+módulos que ese rol puede usar (igual que en el proyecto original).
+
+> Flujo del login: `index.php` → `funciones/auth.php` (verifica) → guarda sesión
+> (`includes/sesion.php`) → redirige al dashboard según el cargo.
