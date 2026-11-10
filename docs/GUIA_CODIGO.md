@@ -257,3 +257,89 @@ el servidor** (con `includes/validaciones.php`) dentro de cada `api/`. Las regla
 nombres/apellidos, solo números en documento/teléfono, email válido, fechas válidas, campos
 obligatorios y contraseña mínima de 6. Todos los mensajes se muestran con **SweetAlert2** (ventana)
 o **Toastify** (aviso de esquina); **nunca** con `alert()`.
+
+---
+
+## Clientes — Administrador
+
+### `funciones/clientes.php`
+Operaciones sobre clientes: `listarClientes`, `buscarCliente`, `buscarClientePorDocumento`,
+`registrarCliente` (documento único; se usa dentro de una venta) y `editarCliente` (cambia tipo de
+documento, nombre, apellido y correo; **el número de documento NO se modifica**, regla del manual).
+
+### `api/clientes.php` y `admin/clientes.php`
+El endpoint (solo Administrador) y la página: una tabla de clientes y un formulario de edición con
+el documento deshabilitado. Todo por fetch, con notificaciones.
+
+---
+
+## Inventario — Administrador y Bodeguero
+
+### `funciones/inventario.php`
+El stock vive en la tabla `inventario` (una fila por combinación producto+talla+color). Funciones:
+- `listarInventarioPorProducto`: muestra stock total, reservado y **disponible = total − reservado**.
+- `reservarStock`/`liberarStock`/`descontarStock`/`reponerStock`: las usa el módulo de ventas y
+  entradas para mover el stock.
+- `sumarOCrearStock`: usada por entradas de mercancía; crea la combinación si no existía.
+- `verificarEstadoAgotado`: marca el producto como **Agotado** si todas sus combinaciones llegan a
+  disponible 0, o lo vuelve **Disponible** si hay stock (no toca descontinuados).
+- `registrarAjuste`: ajuste manual (solo Administrador); no deja el stock negativo ni por debajo de
+  lo reservado; queda registrado con fecha y empleado (transacción).
+
+### `api/inventario.php`, `includes/inventario_vista.php`, `admin/inventario.php`, `bodeguero/inventario.php`
+Consulta disponible para Administrador y Bodeguero; el ajuste manual solo para el Administrador. La
+vista se comparte entre ambos roles (`$puedeAjustar` decide si se muestra el formulario de ajuste).
+
+---
+
+## Entrada de mercancía — Administrador y Bodeguero
+
+### `funciones/mercancia.php`
+`registrarEntrada`: registra una entrada con sus productos **dentro de una transacción**. Valida que
+el **proveedor de la entrada coincida con el del producto**, que el producto **no esté
+descontinuado**, y cantidades/precios positivos (mensajes del `AbastecimientoService` original).
+Crea las combinaciones talla/color que no existan y suma el stock. `listarEntradas` da el historial.
+
+### `api/mercancia.php`, `includes/mercancia_vista.php`, `admin/mercancia.php`, `bodeguero/mercancia.php`
+La pantalla: se elige el proveedor, se van agregando productos a una tabla acumulada (con botón
+Quitar) y al final se registra la entrada completa. Todo por fetch, con notificaciones.
+
+---
+
+## Ventas — Administrador y Vendedor
+
+### `funciones/ventas.php`
+El flujo completo (traducido del `VentaService` original):
+- `crearVenta`: abre una venta en estado **Pendiente**.
+- `agregarDetalle`: agrega un producto; **reserva stock** y calcula el precio con descuento vigente
+  (no permite productos agotados ni descontinuados). `quitarDetalle` libera el stock.
+- `registrarPago`: permite **varios pagos** (COP); en efectivo calcula el **cambio**; tarjeta y
+  transferencia exigen referencia.
+- `completarVenta`: exige que los pagos cubran el total, **descuenta el stock** definitivamente y
+  deja la venta **Completada** (inmutable). Transacción.
+- `anularVenta`: solo ventas pendientes, motivo de **mínimo 5 caracteres**; libera el stock, borra
+  los pagos y registra la anulación con fecha, hora y empleado. Transacción.
+- Consultas: `buscarVenta`, `detallesVenta`, `pagosVenta`, `listarVentas`, `listarAnulaciones`.
+
+### `api/ventas.php`, `includes/venta_nueva_vista.php`
+El endpoint maneja todo el flujo (cliente → productos → pagos → completar/anular). El **Vendedor**
+solo ve y anula **sus** ventas; el **Administrador** todas. La pantalla de nueva venta tiene los 3
+pasos del manual y se comparte entre `vendedor/ventas.php` y `admin/venta-nueva.php`.
+
+### `admin/ventas.php`
+Historial de todas las ventas con su estado, botón para **anular** las pendientes y el **registro de
+anulaciones** (que solo el Administrador puede ver).
+
+---
+
+## Consultas (reportes) por rol
+
+### `funciones/consultas.php`
+Reutiliza las consultas de ventas y entradas, y agrega `consultarVentasVencidas` (ventas pendientes
+con más de 24 horas, regla del manual).
+
+### `api/consultas.php` y las páginas de cada rol
+El endpoint define **qué puede ver cada rol**: el Administrador ve todas las ventas, las vencidas,
+las anulaciones y las entradas; el Vendedor solo sus ventas; el Bodeguero solo las entradas. Cada
+rol tiene su página (`admin/consultas.php`, `vendedor/consultas.php`, `bodeguero/consultas.php`) que
+muestra sus tablas. Las anulaciones son exclusivas del Administrador.
