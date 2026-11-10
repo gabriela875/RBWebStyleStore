@@ -59,8 +59,8 @@ $menu = $menus[$cargo] ?? [];
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-    <script src="<?= $base ?>/assets/js/notificaciones.js" defer></script>
-    <script src="<?= $base ?>/assets/js/validaciones.js" defer></script>
+    <script src="<?= $base ?>/assets/js/notificaciones.js" ></script>
+    <script src="<?= $base ?>/assets/js/validaciones.js" ></script>
 </head>
 <body>
 <div class="layout">
