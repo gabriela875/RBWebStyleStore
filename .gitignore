@@ -1,1 +1,17 @@
+# Java / JSF (proyecto de referencia)
 target/
+*.class
+.settings/
+.classpath
+.project
+
+# Dependencias PHP (no se usan, pero por si acaso)
+vendor/
+
+# Configuración local con credenciales reales
+config/conexion.php
+stylestore-php/config/conexion.php
+
+# Sistema
+.DS_Store
+Thumbs.db
