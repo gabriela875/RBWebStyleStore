@@ -1,0 +1,258 @@
+@charset "UTF-8";
+
+/* Variables de la paleta (por si esta hoja se usa sin estilos.css) */
+:root {
+  --principal:     #C43670;
+  --principal-med: #F283AF;
+  --acento:        #F3CC97;
+  --rosa-suave:    #FBD9E5;
+  --crema-media:   #F5E8EF;
+  --crema-clara:   #FBF4EB;
+  --blanco:        #FAFAF8;
+  --texto-oscuro:  #3D1A2A;
+  --texto-medio:   #6B3050;
+  --texto-suave:   #9C6080;
+  --borde:         #F0C8D8;
+  --error:         #A0273A;
+  --error-fondo:   #FAE8EC;
+  --exito:         #3D6B3F;
+  --exito-fondo:   #EDF4ED;
+}
+
+/* ── Formulario panel ─────────────────────────────────────── */
+.panel-grid {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.form-grid-full {
+  grid-column: 1 / -1;
+}
+
+.form-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--texto-suave);
+}
+
+.form-input, .form-select {
+  border: none;
+  border-bottom: 2px solid var(--borde);
+  background: transparent;
+  padding: 10px 0;
+  font-family: 'Jost', sans-serif;
+  font-size: 13px;
+  color: var(--texto-oscuro);
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+
+.form-input:focus, .form-select:focus {
+  border-bottom-color: var(--principal);
+}
+
+.form-select {
+  cursor: pointer;
+}
+
+/* ── Tabla ────────────────────────────────────────────────── */
+.tabla-contenedor {
+  overflow-x: auto;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.tabla thead tr {
+  background: var(--principal);
+  color: var(--crema-clara);
+}
+
+.tabla thead th {
+  padding: 13px 16px;
+  text-align: left;
+  font-family: 'Jost', sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  font-size: 11px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.tabla tbody tr {
+  border-bottom: 1px solid var(--rosa-suave);
+  transition: background 0.15s;
+}
+
+.tabla tbody tr:hover {
+  background: var(--crema-media);
+}
+
+.tabla tbody td {
+  padding: 13px 16px;
+  color: var(--texto-medio);
+}
+
+/* ── Acciones tabla ───────────────────────────────────────── */
+.acciones {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-tabla {
+  background: transparent;
+  border: 1px solid var(--borde);
+  color: var(--texto-medio);
+  padding: 5px 12px;
+  font-family: 'Jost', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-tabla:hover {
+  background: var(--principal);
+  color: var(--crema-clara);
+  border-color: var(--principal);
+}
+
+.btn-tabla-peligro {
+  background: transparent;
+  border: 1px solid var(--borde);
+  color: var(--error);
+  padding: 5px 12px;
+  font-family: 'Jost', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-tabla-peligro:hover {
+  background: var(--error);
+  color: var(--crema-clara);
+  border-color: var(--error);
+}
+
+/* ── Badges ───────────────────────────────────────────────── */
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid;
+}
+
+.badge-activo       { color: var(--exito); border-color: var(--exito); background: var(--exito-fondo); }
+.badge-inactivo     { color: var(--texto-suave); border-color: var(--borde); background: var(--crema-media); }
+.badge-pendiente    { color: #8B6010; border-color: var(--acento); background: #FDF6E8; }
+.badge-completada   { color: var(--exito); border-color: var(--exito); background: var(--exito-fondo); }
+.badge-anulada      { color: var(--error); border-color: var(--error); background: var(--error-fondo); }
+.badge-disponible   { color: var(--exito); border-color: var(--exito); background: var(--exito-fondo); }
+.badge-agotado      { color: var(--error); border-color: var(--error); background: var(--error-fondo); }
+.badge-descontinuado{ color: var(--texto-suave); border-color: var(--borde); background: var(--crema-media); }
+.badge-bloqueado    { color: var(--error); border-color: var(--error); background: var(--error-fondo); }
+
+/* ── Mensajes ─────────────────────────────────────────────── */
+.mensaje-exito {
+  background: #F5EAF0;
+  border-left: 3px solid var(--principal-med);
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--principal);
+  margin-bottom: 20px;
+}
+
+.mensaje-error {
+  background: var(--error-fondo);
+  border-left: 3px solid var(--error);
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--error);
+  margin-bottom: 20px;
+}
+
+/* ── Botones ──────────────────────────────────────────────── */
+.btn-primario {
+  background: var(--principal);
+  color: var(--crema-clara);
+  border: none;
+  padding: 11px 28px;
+  font-family: 'Jost', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-primario:hover {
+  background: var(--principal-med);
+  color: var(--principal);
+}
+
+.btn-secundario {
+  background: transparent;
+  color: var(--principal);
+  border: 1px solid var(--principal);
+  padding: 10px 24px;
+  font-family: 'Jost', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-secundario:hover {
+  background: var(--principal);
+  color: var(--crema-clara);
+}
+
+.btn-grupo {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+/* ── Separador ────────────────────────────────────────────── */
+.separador {
+  border: none;
+  border-top: 1px solid var(--rosa-suave);
+  margin: 24px 0;
+}
+
+/* ── Utilidades ───────────────────────────────────────────── */
+.oculto { display: none !important; }
+.texto-centrado { text-align: center; }
+.sin-datos {
+  padding: 24px;
+  text-align: center;
+  color: var(--texto-suave);
+  font-size: 13px;
+}
