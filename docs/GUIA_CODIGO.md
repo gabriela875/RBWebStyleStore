@@ -132,3 +132,71 @@ módulos que ese rol puede usar (igual que en el proyecto original).
 
 > Flujo del login: `index.php` → `funciones/auth.php` (verifica) → guarda sesión
 > (`includes/sesion.php`) → redirige al dashboard según el cargo.
+
+---
+
+## Registro de usuario
+
+### `registro.php`
+Página pública (se llega desde el login). El visitante llena nombre, apellido, documento, correo,
+usuario y contraseña. Valida en el cliente y en el servidor (solo letras, solo números, email,
+contraseña ≥ 6). Si todo está bien, llama a `registrarUsuarioPublico()` de `funciones/auth.php`,
+que crea la cuenta con **cargo Vendedor** y **estado Inactivo**. El mensaje final le avisa que un
+administrador debe activarla antes de poder entrar.
+
+---
+
+## Recuperar contraseña
+
+### `libs/PHPMailer/`
+Es la librería **PHPMailer** (instalada sin Composer) que envía el correo. `cargar.php` incluye sus
+tres archivos; así se usa sin necesidad de `vendor/`.
+
+### `funciones/recuperacion.php`
+La lógica de recuperación:
+- `generarRecuperacion()`: busca al empleado por su correo; si existe, crea un **token aleatorio**,
+  guarda **solo su hash** en la tabla `password_reset` con vencimiento a 30 minutos y un solo uso.
+  Luego intenta enviar el correo con PHPMailer. Si no hay correo configurado o falla y estamos en
+  **modo desarrollo**, devuelve el enlace para mostrarlo en pantalla. Por seguridad, nunca revela si
+  el correo existe o no.
+- `validarToken()`: comprueba que el token (por su hash) exista, no esté usado y no haya expirado.
+- `restablecerConToken()`: cambia la contraseña (con `password_hash`) y marca el token como usado,
+  todo dentro de una transacción.
+
+### `recuperar.php`
+Pantalla donde el usuario escribe su correo. Si está en modo desarrollo y no hay correo, muestra el
+enlace directamente.
+
+### `restablecer.php`
+Pantalla a la que lleva el enlace. Valida el token; si sirve, pide la nueva contraseña (dos veces,
+mínimo 6 caracteres) y la guarda. Si el token no sirve o expiró, ofrece pedir uno nuevo.
+
+---
+
+## CRUD de Usuarios (empleados) — Administrador
+
+### `funciones/empleados.php`
+Contiene todas las operaciones sobre empleados (traducidas del `EmpleadoService` original):
+- `listarEmpleados()` / `buscarEmpleado()` / `listarCargos()`: consultas para la tabla y el formulario.
+- `registrarEmpleado()`: valida documento, usuario y correo únicos; crea al empleado Activo y
+  Desbloqueado con la contraseña cifrada.
+- `editarEmpleado()`: actualiza los datos validando que no choquen con otros empleados.
+- `desactivarEmpleado()`: **no deja desactivar** si el empleado tiene ventas pendientes (mensaje del
+  original). `activarEmpleado()` lo reactiva.
+- `eliminarEmpleado()`: **borra de verdad solo si no tiene ventas, entradas ni ajustes**; si los
+  tiene, en su lugar lo **desactiva** (y avisa de ello).
+- El desbloqueo reutiliza `desbloquearCuenta()` de `auth.php`.
+
+### `api/empleados.php`
+Recibe las acciones AJAX (`listar`, `obtener`, `crear`, `editar`, `activar`, `desactivar`,
+`desbloquear`, `eliminar`) y responde en JSON. Está **protegido solo para Administrador**: cualquier
+otro rol recibe un error. Valida de nuevo los datos en el servidor antes de guardar.
+
+### `admin/empleados.php`
+La página con dos partes: un **formulario** (que sirve para crear y para editar) y la **tabla** del
+personal. Todo funciona **sin recargar**: el JavaScript llama a `api/empleados.php` con `fetch`,
+muestra los mensajes con SweetAlert2/Toastify y vuelve a cargar la tabla. Los botones cambian según
+el estado del empleado (Activar/Desactivar, Desbloquear si está bloqueado, Editar, Eliminar).
+
+> Flujo del módulo: `admin/empleados.php` (pantalla) → `api/empleados.php` (recibe la acción) →
+> `funciones/empleados.php` (consulta y reglas) → base de datos.
