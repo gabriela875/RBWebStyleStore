@@ -178,6 +178,18 @@ Significa que falta activar la extensión de MySQL para PDO.
   del inicio para que quede `extension=pdo_mysql`.
 - Guarda y **reinicia Apache**.
 
+### "Error de base de datos" al completar o anular una venta (o en entradas)
+Si usas un `conexion.php` creado con una versión anterior, agrégale esta línea dentro del arreglo
+`$opciones` de la función `conectar()` (junto a las otras `PDO::ATTR_...`):
+```php
+PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
+```
+Esto evita el error "Cannot execute queries while other unbuffered queries are active", que ocurría
+al ejecutar una consulta justo después de otra cuyo resultado no se había consumido por completo.
+Con `MODO_DESARROLLO` en `true`, el sistema ahora muestra el mensaje real de la base de datos en la
+notificación y lo escribe en el log de PHP (`C:\xampp\php\logs\php_error_log` o el que indique
+`error_log` en `php.ini`), lo que facilita diagnosticar este tipo de errores.
+
 ### Error de conexión a la base de datos
 - Verifica que **MySQL esté encendido** en el panel de XAMPP.
 - Revisa que en `conexion.php` el nombre de la base sea `bd_stylestore` y el usuario `root` con

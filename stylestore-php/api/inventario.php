@@ -4,6 +4,7 @@
 // El Bodeguero puede marcar agotado / descontinuar (reglas del manual).
 require_once __DIR__ . '/../includes/proteger.php';
 require_once __DIR__ . '/../includes/validaciones.php';
+require_once __DIR__ . '/../includes/errores.php';
 require_once __DIR__ . '/../funciones/inventario.php';
 
 protegerApi(['Administrador', 'Bodeguero']);
@@ -46,7 +47,7 @@ try {
     }
 
 } catch (PDOException $e) {
-    echo json_encode(['ok' => false, 'mensaje' => 'Error de base de datos']);
+    echo json_encode(respuestaErrorBD($e, 'inventario/' . $accion));
 } catch (Exception $e) {
     echo json_encode(['ok' => false, 'mensaje' => $e->getMessage()]);
 }

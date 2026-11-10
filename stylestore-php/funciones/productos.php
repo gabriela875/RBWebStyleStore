@@ -21,7 +21,9 @@ function listarProductos($pdo) {
 function buscarProducto($pdo, $id) {
     $stmt = $pdo->prepare("SELECT * FROM producto WHERE id_Producto = :id");
     $stmt->execute([':id' => $id]);
-    return $stmt->fetch() ?: null;
+    $fila = $stmt->fetch();
+    $stmt->closeCursor();
+    return $fila ?: null;
 }
 
 // Catalogos para los selectores del formulario
@@ -37,7 +39,9 @@ function catalogosProducto($pdo) {
 function buscarEstadoProductoId($pdo, $nombre) {
     $stmt = $pdo->prepare("SELECT id_Estado_Prod FROM estado_producto WHERE Nombre = :n");
     $stmt->execute([':n' => $nombre]);
-    return (int)$stmt->fetchColumn();
+    $valor = $stmt->fetchColumn();
+    $stmt->closeCursor();
+    return (int)$valor;
 }
 
 function nombreEstadoProducto($pdo, $idProducto) {
@@ -45,7 +49,9 @@ function nombreEstadoProducto($pdo, $idProducto) {
                            JOIN estado_producto ep ON ep.id_Estado_Prod = p.id_Estado_Prod
                            WHERE p.id_Producto = :id");
     $stmt->execute([':id' => $idProducto]);
-    return $stmt->fetchColumn();
+    $valor = $stmt->fetchColumn();
+    $stmt->closeCursor();
+    return $valor;
 }
 
 // Registra un producto (codigo unico, precio > 0; se crea Disponible)
@@ -185,7 +191,9 @@ function buscarDescuentoActivo($pdo, $idProducto) {
                              AND d.Fecha_inicio <= CURDATE() AND d.Fecha_fin >= CURDATE()
                            LIMIT 1");
     $stmt->execute([':id' => $idProducto]);
-    return $stmt->fetch() ?: null;
+    $fila = $stmt->fetch();
+    $stmt->closeCursor();
+    return $fila ?: null;
 }
 
 // Registra un descuento para un producto, con todas las reglas del original

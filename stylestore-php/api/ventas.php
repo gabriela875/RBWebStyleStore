@@ -2,6 +2,7 @@
 // Endpoint AJAX del modulo de ventas. Devuelve JSON. Administrador y Vendedor.
 require_once __DIR__ . '/../includes/proteger.php';
 require_once __DIR__ . '/../includes/validaciones.php';
+require_once __DIR__ . '/../includes/errores.php';
 require_once __DIR__ . '/../funciones/ventas.php';
 require_once __DIR__ . '/../funciones/clientes.php';
 require_once __DIR__ . '/../funciones/productos.php';
@@ -131,7 +132,7 @@ try {
     }
 
 } catch (PDOException $e) {
-    echo json_encode(['ok' => false, 'mensaje' => 'Error de base de datos']);
+    echo json_encode(respuestaErrorBD($e, 'ventas/' . $accion));
 } catch (Exception $e) {
     echo json_encode(['ok' => false, 'mensaje' => $e->getMessage()]);
 }

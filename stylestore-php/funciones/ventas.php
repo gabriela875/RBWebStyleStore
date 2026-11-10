@@ -40,7 +40,9 @@ function estadoVenta($pdo, $idVenta) {
                            JOIN estado_venta ev ON ev.id_Estado_Venta = v.id_Estado_Venta
                            WHERE v.id_Venta = :id");
     $stmt->execute([':id' => $idVenta]);
-    return $stmt->fetchColumn();
+    $valor = $stmt->fetchColumn();
+    $stmt->closeCursor();
+    return $valor;
 }
 
 // Agrega un producto (combinacion de inventario) a una venta pendiente: reserva stock.
@@ -121,6 +123,7 @@ function recalcularTotal($pdo, $idVenta) {
     $stmt = $pdo->prepare("SELECT COALESCE(SUM(Precio_unitario * Cantidad), 0) FROM detalle_venta WHERE id_Venta = :v");
     $stmt->execute([':v' => $idVenta]);
     $total = $stmt->fetchColumn();
+    $stmt->closeCursor(); // cerrar antes de ejecutar el UPDATE en la misma conexion
     $pdo->prepare("UPDATE venta SET Total = :t WHERE id_Venta = :v")
         ->execute([':t' => $total, ':v' => $idVenta]);
 }
@@ -128,13 +131,17 @@ function recalcularTotal($pdo, $idVenta) {
 function totalVenta($pdo, $idVenta) {
     $stmt = $pdo->prepare("SELECT Total FROM venta WHERE id_Venta = :v");
     $stmt->execute([':v' => $idVenta]);
-    return (float)$stmt->fetchColumn();
+    $valor = $stmt->fetchColumn();
+    $stmt->closeCursor();
+    return (float)$valor;
 }
 
 function sumaPagos($pdo, $idVenta) {
     $stmt = $pdo->prepare("SELECT COALESCE(SUM(Valor), 0) FROM pago WHERE id_Venta = :v");
     $stmt->execute([':v' => $idVenta]);
-    return (float)$stmt->fetchColumn();
+    $valor = $stmt->fetchColumn();
+    $stmt->closeCursor();
+    return (float)$valor;
 }
 
 // Registra un pago en una venta pendiente (pagos multiples permitidos).
@@ -149,6 +156,7 @@ function registrarPago($pdo, $idVenta, $idMetodo, $valor, $referencia) {
     $stmt = $pdo->prepare("SELECT Nombre FROM metodo_pago WHERE id_Metodo_Pago = :id");
     $stmt->execute([':id' => $idMetodo]);
     $metodo = $stmt->fetchColumn();
+    $stmt->closeCursor();
     if (!$metodo) {
         throw new Exception('Método de pago no válido');
     }
@@ -194,11 +202,13 @@ function completarVenta($pdo, $idVenta) {
 
     $pdo->beginTransaction();
     try {
-        // Descontar stock de cada detalle
+        // Descontar stock de cada detalle (leemos todo y cerramos el cursor antes de los UPDATE)
         $detalles = $pdo->prepare("SELECT id_Inventario, Cantidad FROM detalle_venta WHERE id_Venta = :v");
         $detalles->execute([':v' => $idVenta]);
-        foreach ($detalles->fetchAll() as $d) {
-            descontarStock($pdo, $d['id_Inventario'], $d['Cantidad']);
+        $filas = $detalles->fetchAll();
+        $detalles->closeCursor();
+        foreach ($filas as $d) {
+            descontarStock($pdo, $d['id_Inventario'], (int)$d['Cantidad']);
         }
         $pdo->prepare("UPDATE venta SET id_Estado_Venta =
                          (SELECT id_Estado_Venta FROM estado_venta WHERE Nombre = 'Completada')
@@ -221,11 +231,13 @@ function anularVenta($pdo, $idVenta, $motivo, $idEmpleado) {
 
     $pdo->beginTransaction();
     try {
-        // Liberar el stock reservado de cada detalle
+        // Liberar el stock reservado de cada detalle (leemos todo y cerramos antes de modificar)
         $detalles = $pdo->prepare("SELECT id_Inventario, Cantidad FROM detalle_venta WHERE id_Venta = :v");
         $detalles->execute([':v' => $idVenta]);
-        foreach ($detalles->fetchAll() as $d) {
-            liberarStock($pdo, $d['id_Inventario'], $d['Cantidad']);
+        $filas = $detalles->fetchAll();
+        $detalles->closeCursor();
+        foreach ($filas as $d) {
+            liberarStock($pdo, $d['id_Inventario'], (int)$d['Cantidad']);
         }
         // Los pagos parciales quedan sin efecto
         $pdo->prepare("DELETE FROM pago WHERE id_Venta = :v")->execute([':v' => $idVenta]);

@@ -32,6 +32,11 @@ function conectar() {
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         PDO::ATTR_EMULATE_PREPARES   => false,
+        // Consultas bufferizadas: evita el error "Cannot execute queries while
+        // other unbuffered queries are active" cuando una consulta se ejecuta
+        // justo despues de otra cuyo resultado no se consumio por completo
+        // (pasa dentro de las transacciones de ventas y entradas).
+        PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
     ];
     return new PDO($dsn, BD_USUARIO, BD_CONTRASENA, $opciones);
 }

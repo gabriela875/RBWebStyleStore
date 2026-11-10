@@ -24,7 +24,9 @@ function listarInventarioPorProducto($pdo, $idProducto) {
 function buscarInventarioPorId($pdo, $idInventario) {
     $stmt = $pdo->prepare("SELECT * FROM inventario WHERE id_Inventario = :id");
     $stmt->execute([':id' => $idInventario]);
-    return $stmt->fetch() ?: null;
+    $fila = $stmt->fetch();
+    $stmt->closeCursor();
+    return $fila ?: null;
 }
 
 // Busca una combinacion exacta producto/talla/color (o null)
@@ -32,7 +34,9 @@ function buscarCombinacion($pdo, $idProducto, $idTalla, $idColor) {
     $stmt = $pdo->prepare("SELECT * FROM inventario
                            WHERE id_Producto = :p AND id_Talla = :t AND id_Color = :c");
     $stmt->execute([':p' => $idProducto, ':t' => $idTalla, ':c' => $idColor]);
-    return $stmt->fetch() ?: null;
+    $fila = $stmt->fetch();
+    $stmt->closeCursor();
+    return $fila ?: null;
 }
 
 // Catalogos para los selectores de inventario
@@ -100,18 +104,24 @@ function sumarOCrearStock($pdo, $idProducto, $idTalla, $idColor, $cantidad) {
 
 // Actualiza el estado del producto: Agotado si todas sus combinaciones tienen disponible 0;
 // Disponible si hay alguna con disponible > 0. No toca productos Descontinuados.
+// Se hace con UNA sola consulta (sin SELECT intermedios) para no dejar cursores abiertos
+// dentro de las transacciones de ventas/entradas.
 function verificarEstadoAgotado($pdo, $idProducto) {
-    if (nombreEstadoProducto($pdo, $idProducto) === 'Descontinuado') {
-        return;
-    }
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM inventario
-                           WHERE id_Producto = :id AND (Stock - Stock_Reservado) > 0");
+    $sql = "UPDATE producto p
+            SET p.id_Estado_Prod = (
+                SELECT ep.id_Estado_Prod FROM estado_producto ep
+                WHERE ep.Nombre = CASE
+                    WHEN EXISTS (
+                        SELECT 1 FROM inventario i
+                        WHERE i.id_Producto = p.id_Producto AND (i.Stock - i.Stock_Reservado) > 0
+                    ) THEN 'Disponible' ELSE 'Agotado'
+                END
+            )
+            WHERE p.id_Producto = :id
+              AND p.id_Estado_Prod <> (SELECT id_Estado_Prod FROM estado_producto WHERE Nombre = 'Descontinuado')";
+    $stmt = $pdo->prepare($sql);
     $stmt->execute([':id' => $idProducto]);
-    $hayDisponible = $stmt->fetchColumn() > 0;
-
-    $nuevoEstado = $hayDisponible ? 'Disponible' : 'Agotado';
-    $pdo->prepare("UPDATE producto SET id_Estado_Prod = :e WHERE id_Producto = :id")
-        ->execute([':e' => buscarEstadoProductoId($pdo, $nuevoEstado), ':id' => $idProducto]);
+    $stmt->closeCursor();
 }
 
 // Registra un ajuste manual de inventario (solo el Administrador).

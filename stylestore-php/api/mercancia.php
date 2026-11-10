@@ -2,6 +2,7 @@
 // Endpoint AJAX de entrada de mercancia. Devuelve JSON. Administrador y Bodeguero.
 require_once __DIR__ . '/../includes/proteger.php';
 require_once __DIR__ . '/../includes/validaciones.php';
+require_once __DIR__ . '/../includes/errores.php';
 require_once __DIR__ . '/../funciones/mercancia.php';
 require_once __DIR__ . '/../funciones/productos.php';
 require_once __DIR__ . '/../funciones/proveedores.php';
@@ -45,7 +46,7 @@ try {
     }
 
 } catch (PDOException $e) {
-    echo json_encode(['ok' => false, 'mensaje' => 'Error de base de datos']);
+    echo json_encode(respuestaErrorBD($e, 'mercancia/' . $accion));
 } catch (Exception $e) {
     echo json_encode(['ok' => false, 'mensaje' => $e->getMessage()]);
 }
