@@ -82,3 +82,48 @@ function desbloquearCuenta($pdo, $idEmpleado) {
                    WHERE id_Empleado = :id")
         ->execute([':id' => $idEmpleado]);
 }
+
+
+// ----------------------------------------------------------------
+// Auto-registro desde el login.
+// El usuario nuevo se crea con cargo Vendedor y estado Inactivo;
+// el Administrador debe activarlo antes de que pueda entrar.
+// ----------------------------------------------------------------
+function registrarUsuarioPublico($pdo, $datos) {
+    // Validar duplicados (documento, usuario y correo son unicos)
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM empleados WHERE Num_Documento = :doc");
+    $stmt->execute([':doc' => $datos['documento']]);
+    if ($stmt->fetchColumn() > 0) {
+        throw new Exception('Ya existe un empleado con ese documento');
+    }
+
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM empleados WHERE Usuario = :usuario");
+    $stmt->execute([':usuario' => $datos['usuario']]);
+    if ($stmt->fetchColumn() > 0) {
+        throw new Exception('El usuario ya está en uso');
+    }
+
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM empleados WHERE Correo = :correo");
+    $stmt->execute([':correo' => $datos['correo']]);
+    if ($stmt->fetchColumn() > 0) {
+        throw new Exception('Ya existe un empleado con ese correo');
+    }
+
+    // Cargo Vendedor (2), estado Inactivo (2), bloqueo Desbloqueado (1)
+    $sql = "INSERT INTO empleados
+                (Num_Documento, Nombre, Apellido, Correo, Usuario, Contrasena,
+                 Intentos_fallidos, id_Cargo, id_Estado_Emp, id_Estado_Bloq)
+            VALUES
+                (:doc, :nombre, :apellido, :correo, :usuario, :hash, 0,
+                 (SELECT id_Cargo FROM cargo WHERE Tipo = 'Vendedor'),
+                 (SELECT id_Estado_Emp FROM estado_empleado WHERE Nombre = 'Inactivo'),
+                 (SELECT id_Estado_Bloq FROM estado_bloqueo WHERE Nombre = 'Desbloqueado'))";
+    $pdo->prepare($sql)->execute([
+        ':doc'      => $datos['documento'],
+        ':nombre'   => $datos['nombre'],
+        ':apellido' => $datos['apellido'],
+        ':correo'   => $datos['correo'],
+        ':usuario'  => $datos['usuario'],
+        ':hash'     => password_hash($datos['contrasena'], PASSWORD_DEFAULT),
+    ]);
+}
